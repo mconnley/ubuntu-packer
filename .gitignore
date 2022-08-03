@@ -1,0 +1,11 @@
+# Cache objects
+packer_cache/
+files/secure
+
+# Crash log
+crash.log
+
+# For built boxes
+*.box
+
+sensitive*

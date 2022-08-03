@@ -1,0 +1,43 @@
+#!/bin/bash
+echo '> Moving firstboot script...'
+mv /tmp/postbuild_job.sh /usr/local/bin/postbuild_job.sh
+echo ' Setting firstboot script to executable...'
+chmod +x /usr/local/bin/postbuild_job.sh
+#echo '> Installing docker...'
+#apt-get -y install docker.io
+echo '> Executing apt-get dist-upgrade...'
+apt-get -y dist-upgrade
+echo '> Cleaning apt-get ...'
+apt-get -y autoremove
+apt-get -y clean
+echo '> Cleaning up salt minion...'
+rm /etc/salt/minion_id
+echo '> Enabling VMWare custom scripts...'
+vmware-toolbox-cmd config set deployPkg enable-custom-scripts true
+echo '> Cleaning all audit logs ...'
+if [ -f /var/log/audit/audit.log ]; then
+cat /dev/null > /var/log/audit/audit.log
+fi
+if [ -f /var/log/wtmp ]; then
+cat /dev/null > /var/log/wtmp
+fi
+if [ -f /var/log/lastlog ]; then
+cat /dev/null > /var/log/lastlog
+fi
+echo '> Setting hostname to localhost ...'
+cat /dev/null > /etc/hostname
+hostnamectl set-hostname localhost
+
+echo '> Disabling swap...'
+swapoff -a
+sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
+
+echo '> Cleaning the machine-id ...'
+truncate -s 0 /etc/machine-id
+rm /var/lib/dbus/machine-id
+ln -s /etc/machine-id /var/lib/dbus/machine-id
+
+echo '> Resetting Cloud-Init'
+rm /etc/cloud/cloud.cfg.d/*.cfg
+rm /etc/netplan/0*
+cloud-init clean -s -l
