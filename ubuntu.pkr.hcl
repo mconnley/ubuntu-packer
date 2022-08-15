@@ -19,6 +19,34 @@ variable "matt_password" {
   sensitive = true
 }
 
+variable "check_mk_fqdn" {
+  type    = string
+  description = "The fqdn of the checkmk server."
+  default = ""
+  sensitive = true
+}
+
+variable "check_mk_site" {
+  type    = string
+  description = "The checkmk site to join."
+  default = ""
+  sensitive = true
+}
+
+variable "check_mk_username" {
+  type    = string
+  description = "The username to authenticate to checkmk"
+  default = ""
+  sensitive = true
+}
+
+variable "check_mk_password" {
+  type    = string
+  description = "The password to authenticate to checkmk"
+  default = ""
+  sensitive = true
+}
+
 # ISO Objects
 
 variable "iso_path" {
@@ -30,7 +58,6 @@ variable "iso_path" {
 variable iso_file{
   type = string
   description = "The file name of the guest operating system ISO image installation media."
-  # https://releases.ubuntu.com/20.04/ubuntu-20.04.1-live-server-amd64.iso
   default = ""
 }
 
@@ -252,7 +279,7 @@ source "vmware-iso" "ubuntu-rancher" {
   memory = var.vm_mem_size
   disk_adapter_type = "pvscsi"
   disk_size = var.vm_disk_size
-  disk_additional_size = [32768]
+  disk_additional_size = [var.vm_docker_disk_size]
   disk_type_id = 0
   network_adapter_type = "vmxnet3"
   network = "NAT"
@@ -285,7 +312,7 @@ source "vmware-iso" "ubuntu-rancherlonghorn" {
   memory = var.vm_mem_size
   disk_adapter_type = "pvscsi"
   disk_size = var.vm_disk_size
-  disk_additional_size = [32768, 65536]
+  disk_additional_size = [var.vm_docker_disk_size, var.vm_longhorn_disk_size]
   disk_type_id = 0
   network_adapter_type = "vmxnet3"
   network = "NAT"
@@ -321,9 +348,17 @@ build {
     "vmware-iso.ubuntu-rancher",
     "vmware-iso.ubuntu-rancherlonghorn"
     ]
-  provisioner "file"{
+  provisioner "file" {
     source = "files/postbuild_job.sh"
     destination = "/tmp/postbuild_job.sh"
+  }
+  provisioner "shell" {
+    inline = [
+      "sed -i 's/REPLACE_FQDN/${var.check_mk_fqdn}/' /tmp/postbuild_job.sh",
+      "sed -i 's/REPLACE_SITE/${var.check_mk_site}/' /tmp/postbuild_job.sh",
+      "sed -i 's/REPLACE_USERNAME/${var.check_mk_username}/' /tmp/postbuild_job.sh",
+      "sed -i 's/REPLACE_PASSWORD/${var.check_mk_password}/' /tmp/postbuild_job.sh"
+    ]
   }
   provisioner "shell" {
     execute_command = "echo '${var.ssh_password}' | {{.Vars}} sudo -S -E bash '{{.Path}}'"
@@ -333,18 +368,22 @@ build {
     scripts = var.shell_scripts
     expect_disconnect = true
   }
-  provisioner "file"{
+  provisioner "file" {
     source = "files/99-disable-network-config.cfg"
     destination = "/tmp/99-disable-network-config.cfg"
   }
-  provisioner "shell"{
+  provisioner "shell" {
     inline = ["sudo mv /tmp/99-disable-network-config.cfg /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg"]
   }
-  provisioner "file"{
+  provisioner "file" {
     source = "files/secure/homelabrootcert.crt"
     destination = "/tmp/homelabrootcert.crt"
   }
-  provisioner "shell"{
+  provisioner "file" {
+    source = "files/homelabntp.conf"
+    destination = "/tmp/homelabntp.conf"
+  }  
+  provisioner "shell" {
     inline = [
       "sudo mv /tmp/homelabrootcert.crt /usr/local/share/ca-certificates/homelabroot.crt",
       "sudo update-ca-certificates",
@@ -352,5 +391,4 @@ build {
       "sudo passwd -u matt"
     ]
   }
-
 }
