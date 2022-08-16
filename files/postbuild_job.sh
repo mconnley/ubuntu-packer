@@ -15,7 +15,7 @@ curl --fail -X 'DELETE' "$deleteurl" -H 'accept: */*' -H "$auth_header"
 curl -X 'POST' "$posturl" \
  -H 'accept: application/json' -H "$auth_header" \
  -H 'Content-Type: application/json' -d "{ $body_json_string }"
-cmk-agent-ctl register --hostname $host --server checkmk.mattconnley.com --site homelab --user $checkmkusername --password $checkmkpassword --trust-cert
+cmk-agent-ctl register --hostname $host --server $checkmkfqdn --site $checkmksite --user $checkmkusername --password $checkmkpassword --trust-cert
 
 rm /etc/salt/minion_id
 hostname > /etc/salt/minion_id
