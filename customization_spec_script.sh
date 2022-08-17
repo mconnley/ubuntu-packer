@@ -4,6 +4,5 @@ if [ x$1 = x"precustomization" ]; then
 elif [ x$1 = x"postcustomization" ]; then
  echo Do Postcustomization tasks
  deluser --remove-home packer
- systemctl enable salt-minion
- systemctl start salt-minion
+ /usr/local/bin/postbuild_job.sh
 fi

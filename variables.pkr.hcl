@@ -24,6 +24,8 @@ vm_disk_controller_type     = ["pvscsi"]
 vm_network_card             = "vmxnet3"
 vm_boot_wait                = "5s"
 vm_shutdown_command_text    = "sudo su root -c \"userdel -rf packer; shutdown -P now\""
+vm_docker_disk_size         = 65536
+vm_longhorn_disk_size       = 65536
 
 generic_vm_boot_command = [
     "c<wait>",
@@ -61,11 +63,8 @@ rancherlonghorn_vm_name     = "ubuntu_rancher_longhorn_template"
 
 # ISO Objects
 
-#iso_url                    = "https://releases.ubuntu.com/focal/ubuntu-20.04.4-live-server-amd64.iso"
-iso_url                    = "https://releases.ubuntu.com/22.04/ubuntu-22.04-live-server-amd64.iso"
-#iso_checksum                = "28ccdb56450e643bad03bb7bcf7507ce3d8d90e8bf09e38f6bd9ac298a98eaad"
-iso_checksum                = "84aeaf7823c8c61baa0ae862d0a06b03409394800000b3235854a6b38eb4856f"
+iso_url                    = "https://releases.ubuntu.com/jammy/ubuntu-22.04.1-live-server-amd64.iso"
+iso_checksum                = "10f19c5b2b8d6db711582e0e27f5116296c34fe4b313ba45f9b201a5007056cb"
 
 # Scripts
-
-shell_scripts               = ["./scripts/setup_ubuntu2004.sh"]
+shell_scripts               = ["./scripts/setup_ubuntu.sh"]

@@ -3,10 +3,15 @@ echo '> Moving firstboot script...'
 mv /tmp/postbuild_job.sh /usr/local/bin/postbuild_job.sh
 echo ' Setting firstboot script to executable...'
 chmod +x /usr/local/bin/postbuild_job.sh
-#echo '> Installing docker...'
-#apt-get -y install docker.io
+echo '> Moving NTP config...'
+mkdir /etc/systemd/timesyncd.conf.d
+mv /tmp/homelabntp.conf /etc/systemd/timesyncd.conf.d/homelabntp.conf
 echo '> Executing apt-get dist-upgrade...'
 apt-get -y dist-upgrade
+echo '> Installing Checkmk Agent...'
+wget http://checkmk.mattconnley.com/homelab/check_mk/agents/check-mk-agent_2.1.0p9-1_all.deb -O /root/check-mk-agent_2.1.0p9-1_all.deb
+dpkg -i /root/check-mk-agent_2.1.0p9-1_all.deb
+rm /root/check-mk-agent_2.1.0p9-1_all.deb
 echo '> Cleaning apt-get ...'
 apt-get -y autoremove
 apt-get -y clean
@@ -24,6 +29,15 @@ fi
 if [ -f /var/log/lastlog ]; then
 cat /dev/null > /var/log/lastlog
 fi
+echo '> Masking console-setup service...'
+systemctl mask console-setup
+echo '> Masking fwupd-refresh service...'
+systemctl mask fwupd-refresh
+echo '> Rotating and vacuuming journal...'
+journalctl --rotate
+journalctl --vacuum-time=1s
+echo '> Resetting failed systemd services...'
+systemctl reset-failed
 echo '> Setting hostname to localhost ...'
 cat /dev/null > /etc/hostname
 hostnamectl set-hostname localhost
