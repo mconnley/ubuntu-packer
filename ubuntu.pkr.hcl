@@ -73,6 +73,18 @@ variable "iso_checksum" {
   default = ""
 }
 
+variable iso_url_20{
+  type = string
+  description = "the url to get the ISO from for ubuntu 20/focal"
+  default = ""
+}
+
+variable "iso_checksum_20" {
+  type    = string
+  description = "The SHA-512 checkcum of the ubuntu 20/focal ISO image."
+  default = ""
+}
+
 # HTTP Endpoint
 
 variable "http_directory" {
@@ -107,6 +119,12 @@ variable "rancherlonghorn_vm_name" {
   default = ""
 }
 
+variable "generic_vm_name_20" {
+  type    = string
+  description = "The VM name for the generic build."
+  default = ""
+}
+
 variable "vm_guest_os_vendor" {
   type    = string
   description = "The guest operating system vendor."
@@ -122,6 +140,12 @@ variable "vm_guest_os_member" {
 variable "vm_guest_os_version" {
   type    = string
   description = "The guest operating system version."
+  default = ""
+}
+
+variable "vm_guest_os_version_20" {
+  type    = string
+  description = "The guest operating system version for ubuntu 20/focal."
   default = ""
 }
 
@@ -217,6 +241,12 @@ variable "rancher_vm_boot_command" {
 }
 
 variable "rancherlonghorn_vm_boot_command" {
+  type = list(string)
+  description = "A list of boot commands."
+  default = []
+}
+
+variable "generic_vm_boot_command_20" {
   type = list(string)
   description = "A list of boot commands."
   default = []
@@ -337,6 +367,38 @@ source "vmware-iso" "ubuntu-rancherlonghorn" {
   ovftool_options = ["-dm=thin", "--maxVirtualHardwareVersion=19" ]
 }
 
+source "vmware-iso" "ubuntu-20-generic" {
+  guest_os_type = var.vm_guest_os_type
+  vm_name = var.generic_vm_name_20
+  cpus = var.vm_cpu_sockets
+  cores = var.vm_cpu_cores
+  memory = var.vm_mem_size
+  disk_adapter_type = "pvscsi"
+  disk_size = var.vm_disk_size
+  disk_type_id = 0
+  network_adapter_type = "vmxnet3"
+  network = "NAT"
+  iso_url = var.iso_url_20
+  iso_checksum = var.iso_checksum_20
+  http_directory = var.http_directory
+  boot_wait = var.vm_boot_wait
+  boot_command = var.generic_vm_boot_command_20
+  ssh_password = var.ssh_password
+  ssh_username = var.ssh_username
+  ssh_port = 22
+  ssh_timeout = "30m"
+  ssh_handshake_attempts = "100000"
+  shutdown_command = var.vm_shutdown_command_text
+  shutdown_timeout = "15m"
+  output_directory = "x:\\packer_builds\\ubuntu-20-generic"
+  format = "ova"
+  vmx_data = { 
+    "vmx.scoreboard.enabled" = "FALSE" 
+    "virtualhw.version" = "19"
+    }
+  ovftool_options = ["-dm=thin", "--maxVirtualHardwareVersion=19" ]
+}
+
 ##################################################################################
 # BUILD
 ##################################################################################
@@ -346,7 +408,8 @@ build {
   sources = [
     "vmware-iso.ubuntu-generic",
     "vmware-iso.ubuntu-rancher",
-    "vmware-iso.ubuntu-rancherlonghorn"
+    "vmware-iso.ubuntu-rancherlonghorn",
+    "vmware-iso.ubuntu-20-generic"
     ]
   provisioner "file" {
     source = "files/postbuild_job.sh"
