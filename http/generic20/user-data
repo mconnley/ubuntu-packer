@@ -5,8 +5,7 @@ autoinstall:
     - sudo systemctl stop ssh
   locale: en_US
   keyboard:
-    layout: en
-    variant: us
+    layout: us
   ssh:
     install-server: yes
     allow-pw: yes

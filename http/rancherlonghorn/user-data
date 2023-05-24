@@ -12,8 +12,7 @@ autoinstall:
         dhcp4: true
         dhcp-identifier: mac
   keyboard:
-    layout: en
-    variant: us
+    layout: us
   ssh:
     install-server: yes
     allow-pw: yes
