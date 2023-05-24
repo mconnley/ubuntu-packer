@@ -9,9 +9,9 @@ mv /tmp/homelabntp.conf /etc/systemd/timesyncd.conf.d/homelabntp.conf
 echo '> Executing apt-get dist-upgrade...'
 apt-get -y dist-upgrade
 echo '> Installing Checkmk Agent...'
-wget http://checkmk.mattconnley.com/homelab/check_mk/agents/check-mk-agent_2.1.0p17-1_all.deb -O /root/check-mk-agent_2.1.0p17-1_all.deb
-dpkg -i /root/check-mk-agent_2.1.0p17-1_all.deb
-rm /root/check-mk-agent_2.1.0p17-1_all.deb
+wget http://checkmk.mattconnley.com/homelab/check_mk/agents/check-mk-agent_2.1.0p24-1_all.deb -O /root/check-mk-agent_2.1.0p24-1_all.deb
+dpkg -i /root/check-mk-agent_2.1.0p24-1_all.deb
+rm /root/check-mk-agent_2.1.0p24-1_all.deb
 echo '> Cleaning apt-get ...'
 apt-get -y autoremove
 apt-get -y clean
