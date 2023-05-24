@@ -84,8 +84,8 @@ rancherlonghorn_vm_name     = "ubuntu_rancher_longhorn_template"
 
 # ISO Objects
 
-iso_url                    = "https://releases.ubuntu.com/jammy/ubuntu-22.04.1-live-server-amd64.iso"
-iso_checksum               = "10f19c5b2b8d6db711582e0e27f5116296c34fe4b313ba45f9b201a5007056cb"
+iso_url                    = "https://releases.ubuntu.com/jammy/ubuntu-22.04.2-live-server-amd64.iso"
+iso_checksum               = "5e38b55d57d94ff029719342357325ed3bda38fa80054f9330dc789cd2d43931"
 
 iso_url_20                 = "https://releases.ubuntu.com/focal/ubuntu-20.04.5-live-server-amd64.iso"
 iso_checksum_20            = "5035be37a7e9abbdc09f0d257f3e33416c1a0fb322ba860d42d74aa75c3468d4"
