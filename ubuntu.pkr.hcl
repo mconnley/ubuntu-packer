@@ -408,8 +408,8 @@ build {
   sources = [
     "vmware-iso.ubuntu-generic",
     "vmware-iso.ubuntu-rancher",
-    "vmware-iso.ubuntu-rancherlonghorn"#,
-    #"vmware-iso.ubuntu-20-generic"
+    "vmware-iso.ubuntu-rancherlonghorn",
+    "vmware-iso.ubuntu-20-generic"
     ]
   provisioner "file" {
     source = "files/postbuild_job.sh"
