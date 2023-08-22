@@ -296,9 +296,9 @@ source "vmware-iso" "ubuntu-generic" {
   format = "ova"  
   vmx_data = { 
     "vmx.scoreboard.enabled" = "FALSE" 
-    "virtualhw.version" = "19"
+    "virtualhw.version" = "20"
     }
-  ovftool_options = ["-dm=thin", "--maxVirtualHardwareVersion=19" ]
+  ovftool_options = ["-dm=thin", "--maxVirtualHardwareVersion=20" ]
 }
 
 source "vmware-iso" "ubuntu-rancher" {
@@ -329,9 +329,9 @@ source "vmware-iso" "ubuntu-rancher" {
   format = "ova"
   vmx_data = { 
     "vmx.scoreboard.enabled" = "FALSE" 
-    "virtualhw.version" = "19"
+    "virtualhw.version" = "20"
     }
-  ovftool_options = ["-dm=thin", "--maxVirtualHardwareVersion=19" ]
+  ovftool_options = ["-dm=thin", "--maxVirtualHardwareVersion=20" ]
 }
 
 source "vmware-iso" "ubuntu-rancherlonghorn" {
@@ -362,9 +362,9 @@ source "vmware-iso" "ubuntu-rancherlonghorn" {
   format = "ova"
   vmx_data = { 
     "vmx.scoreboard.enabled" = "FALSE" 
-    "virtualhw.version" = "19"
+    "virtualhw.version" = "20"
     }
-  ovftool_options = ["-dm=thin", "--maxVirtualHardwareVersion=19" ]
+  ovftool_options = ["-dm=thin", "--maxVirtualHardwareVersion=20" ]
 }
 
 source "vmware-iso" "ubuntu-20-generic" {
@@ -394,9 +394,9 @@ source "vmware-iso" "ubuntu-20-generic" {
   format = "ova"
   vmx_data = { 
     "vmx.scoreboard.enabled" = "FALSE" 
-    "virtualhw.version" = "19"
+    "virtualhw.version" = "20"
     }
-  ovftool_options = ["-dm=thin", "--maxVirtualHardwareVersion=19" ]
+  ovftool_options = ["-dm=thin", "--maxVirtualHardwareVersion=20" ]
 }
 
 ##################################################################################
