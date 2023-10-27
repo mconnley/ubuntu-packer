@@ -142,18 +142,17 @@ autoinstall:
     users:
       - name: packer
         passwd: "$6$rounds=4096$Y5ntVQ.n/fb5Fa$.sG.dw5tcSTC1P71YkvT6KNoEOAxEHiy3fexG553HZwznp3/DImxm.mCnoHlT8ejo.9nmUb0Ju.hlPTQZ4kb//"
-        lock-passwd: false
-        ssh_pwauth: True
-        chpasswd: { expire: False }
+        lock_passwd: false
         sudo: ALL=(ALL) NOPASSWD:ALL
       - name: matt
         passwd: "$6$rounds=4096$t/dvf3byfXy1$G2729neNYKOrLZqCi0rWrWimgObtE.rW13CLxuOBFsppF.jTe6U9nYztpJaWPEiF1ESnZR7XZPY0BiYaLt6MX1"
-        lock-passwd: True
-        ssh_pwauth: True
-        chpasswd: { expire: False }
+        lock_passwd: true
         sudo: ALL=(ALL) NOPASSWD:ALL
         ssh_authorized_keys:
           - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDI6FIMmDIzZJiZkf5QKrOcfDSaTCTG0UDP795Cee8joCsPhEzxzcn7bsaObWaP4nQMFW2n/ZcMRlkDAd+h0zjxYzHbY4kVxfwBoWkYtmVAvVsbaheKI5QiclA0zHLa7xYtnERlRuuehdvGu5fhjJcVkFg36YyBvbkVJCbpiL8xsPEU6pgU7FL91OW8/ScZjKqzIDt/CiAAia+HfZ2rNSfJN++foMOvTDv0DOzMzbOmM3sui3N3chBXeqzqonUNMB2fDHC2CKxqnEI0oabDaViYi9UffVE1JKhkuvgFq0IBc76AoU1m8Ar7J9XAHYOmBRFk8/g41Q27kTPNaTZULD2Z matt.connley@mcmacbookpro.mattconnley.com
+    chpasswd: 
+      expire: false
+    ssh_pwauth: true
   late-commands:
     - sed -i -e 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/g' /target/etc/ssh/sshd_config
     - sed -i -e 's/^#\?PermitRootLogin.*/PermitRootLogin yes/g' /target/etc/ssh/sshd_config
