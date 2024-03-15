@@ -52,6 +52,6 @@ rm /var/lib/dbus/machine-id
 ln -s /etc/machine-id /var/lib/dbus/machine-id
 
 echo '> Resetting Cloud-Init'
-rm /etc/cloud/cloud.cfg.d/*.cfg
-rm /etc/netplan/0*
+rm /etc/cloud/cloud.cfg.d/*.cfg -f
+rm /etc/netplan/* -f
 cloud-init clean -s -l
