@@ -88,6 +88,7 @@ autoinstall:
     - docker.io
     - at
     - duf
+    - xinetd
   apt:
     primary:
       - arches: [i386, amd64]
