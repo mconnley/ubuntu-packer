@@ -27,6 +27,7 @@ vm_boot_wait                = "8s"
 vm_shutdown_command_text    = "sudo su root -c \"userdel -rf packer; shutdown -P now\""
 vm_docker_disk_size         = 65536
 vm_longhorn_disk_size       = 65536
+ssh_timeout                 = "45m"
 
 generic_vm_boot_command = [
     "c<wait>",

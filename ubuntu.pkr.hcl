@@ -66,7 +66,7 @@ source "vsphere-iso" "ubuntu-generic" {
   ssh_password = var.ssh_password
   ssh_username = var.ssh_username
   ssh_port = 22
-  ssh_timeout = "30m"
+  ssh_timeout = var.ssh_timeout
   ssh_handshake_attempts = "100000"
 }
 
@@ -122,7 +122,7 @@ source "vsphere-iso" "ubuntu-rancher" {
   ssh_password = var.ssh_password
   ssh_username = var.ssh_username
   ssh_port = 22
-  ssh_timeout = "30m"
+  ssh_timeout = var.ssh_timeout
   ssh_handshake_attempts = "100000"
 }
 
@@ -183,7 +183,7 @@ source "vsphere-iso" "ubuntu-rancherlonghorn" {
   ssh_password = var.ssh_password
   ssh_username = var.ssh_username
   ssh_port = 22
-  ssh_timeout = "30m"
+  ssh_timeout = var.ssh_timeout
   ssh_handshake_attempts = "100000"
 }
 

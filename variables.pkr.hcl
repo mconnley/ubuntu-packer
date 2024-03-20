@@ -331,3 +331,9 @@ variable "vm_shutdown_command_text" {
   description = "The string of commands issued to shut down the VM after successful build."
   default = ""
 }
+
+variable "ssh_timeout" {
+  type = string
+  description = "The time to wait for ssh to become available before timing out. "
+  default = "30m"
+}
