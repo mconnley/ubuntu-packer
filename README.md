@@ -1,5 +1,7 @@
 # ubuntu-packer
 
+v0.2.0
+
 Root CA cert should be /files/secure/homelabrootcert.crt
 
 Requires sensitive.variables.pkr.hcl in root folder, should be like:

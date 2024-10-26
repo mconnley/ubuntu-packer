@@ -6,12 +6,13 @@ chmod +x /usr/local/bin/postbuild_job.sh
 echo '> Moving NTP config...'
 mkdir /etc/systemd/timesyncd.conf.d
 mv /tmp/homelabntp.conf /etc/systemd/timesyncd.conf.d/homelabntp.conf
+mv /tmp/multipath.conf /etc/multipath.conf
 echo '> Executing apt-get dist-upgrade...'
 apt-get -y dist-upgrade
 echo '> Installing Checkmk Agent...'
-wget http://checkmk.mattconnley.com/homelab/check_mk/agents/check-mk-agent_2.2.0p2-1_all.deb -O /root/check-mk-agent_2.2.0p2-1_all.deb
-dpkg -i /root/check-mk-agent_2.2.0p2-1_all.deb
-rm /root/check-mk-agent_2.2.0p2-1_all.deb
+wget http://checkmk.mattconnley.com/homelab/check_mk/agents/check-mk-agent_2.3.0p12-1_all.deb -O /root/check-mk-agent_2.3.0p12-1_all.deb
+dpkg -i /root/check-mk-agent_2.3.0p12-1_all.deb
+rm /root/check-mk-agent_2.3.0p12-1_all.deb
 echo '> Cleaning apt-get ...'
 apt-get -y autoremove
 apt-get -y clean
@@ -52,6 +53,6 @@ rm /var/lib/dbus/machine-id
 ln -s /etc/machine-id /var/lib/dbus/machine-id
 
 echo '> Resetting Cloud-Init'
-rm /etc/cloud/cloud.cfg.d/*.cfg
-rm /etc/netplan/0*
+rm /etc/cloud/cloud.cfg.d/*.cfg -f
+rm /etc/netplan/* -f
 cloud-init clean -s -l

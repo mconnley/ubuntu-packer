@@ -1,1 +1,1 @@
-packer build -var-file=variables.pkr.hcl -var-file=sensitive.variables.pkr.hcl -force ubuntu.pkr.hcl
+packer build -var-file=ubuntu.pkrvars.hcl -var-file=sensitive.pkrvars.hcl -force .
