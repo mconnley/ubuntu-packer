@@ -6,6 +6,7 @@ chmod +x /usr/local/bin/postbuild_job.sh
 echo '> Moving NTP config...'
 mkdir /etc/systemd/timesyncd.conf.d
 mv /tmp/homelabntp.conf /etc/systemd/timesyncd.conf.d/homelabntp.conf
+mv /tmp/multipath.conf /etc/multipath.conf
 echo '> Executing apt-get dist-upgrade...'
 apt-get -y dist-upgrade
 echo '> Installing Checkmk Agent...'

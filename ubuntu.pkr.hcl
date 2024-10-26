@@ -265,6 +265,10 @@ build {
   provisioner "file" {
     source = "files/homelabntp.conf"
     destination = "/tmp/homelabntp.conf"
+  }
+  provisioner "file" {
+    source = "files/multipath.conf"
+    destination = "/tmp/multipath.conf"
   }  
   provisioner "shell" {
     inline = [
