@@ -62,7 +62,7 @@ autoinstall:
         uri: "http://ro.archive.ubuntu.com/ubuntu/"
     sources:
       saltstack.list:
-        source: "deb https://repo.saltproject.io/salt/py3/ubuntu/22.04/amd64/latest jammy main"
+        source: "deb https://packages.broadcom.com/artifactory/saltproject-deb/ stable main"
         key: |
           -----BEGIN PGP PUBLIC KEY BLOCK-----
 
