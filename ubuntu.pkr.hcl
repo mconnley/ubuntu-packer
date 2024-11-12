@@ -70,6 +70,56 @@ source "vsphere-iso" "ubuntu-generic" {
   ssh_handshake_attempts = "100000"
 }
 
+source "vsphere-iso" "ubuntu-noble" {
+  //General Builder Options
+  convert_to_template = true
+  //Boot Options
+  boot_wait = var.vm_boot_wait
+  boot_command = var.noble_vm_boot_command
+  //HTTP Options
+  http_directory = var.http_directory
+  //vSphere Connection
+  vcenter_server = var.vsphere_endpoint
+  username = var.vsphere_username
+  password = var.vsphere_password
+  insecure_connection = var.vsphere_insecure_connection
+  datacenter = var.vsphere_datacenter
+  //Hardware
+  CPUs = var.vm_cpu_sockets
+  cpu_cores = var.vm_cpu_cores
+  RAM = var.vm_mem_size
+  //Location
+  vm_name = var.generic_vm_name
+  cluster = var.vsphere_cluster
+  datastore = var.vsphere_datastore
+  //Shutdown Configuration
+  shutdown_command = var.vm_shutdown_command_text
+  shutdown_timeout = "15m"
+  //Wait Configuration
+  //ISO Configuration
+  iso_url = var.iso_url_noble
+  iso_checksum = var.iso_checksum_noble
+  //Create Configuration
+  guest_os_type = var.vm_guest_os_type
+  vm_version = var.vm_version
+  network_adapters {
+      network = var.vsphere_network
+      network_card = "vmxnet3"
+    }
+  disk_controller_type = ["pvscsi"]
+  storage {
+    disk_size = var.vm_disk_size
+    disk_thin_provisioned = true
+  }
+  //Export Configuration
+  //SSH Configuration
+  ssh_password = var.ssh_password
+  ssh_username = var.ssh_username
+  ssh_port = 22
+  ssh_timeout = var.ssh_timeout
+  ssh_handshake_attempts = "100000"
+}
+
 source "vsphere-iso" "ubuntu-rancher" {
   //General Builder Options
   convert_to_template = true
@@ -226,9 +276,11 @@ source "vsphere-iso" "ubuntu-rancherlonghorn" {
 build {
   name = "generic"
   sources = [
+    vsphere-iso.noble
+    /*
     "vsphere-iso.ubuntu-generic",
     "vsphere-iso.ubuntu-rancher",
-    "vsphere-iso.ubuntu-rancherlonghorn"/*,
+    "vsphere-iso.ubuntu-rancherlonghorn",
     "vmware-iso.ubuntu-20-generic"*/
     ]
   provisioner "file" {
