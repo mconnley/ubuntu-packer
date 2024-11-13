@@ -276,7 +276,7 @@ source "vsphere-iso" "ubuntu-rancherlonghorn" {
 build {
   name = "generic"
   sources = [
-    vsphere-iso.noble
+    "vsphere-iso.noble"
     /*
     "vsphere-iso.ubuntu-generic",
     "vsphere-iso.ubuntu-rancher",
