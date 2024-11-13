@@ -355,3 +355,9 @@ variable "iso_checksum_noble" {
   description = "The SHA-512 checkcum of the ISO image."
   default = ""
 }
+
+variable "noble_vm_name" {
+  type    = string
+  description = "The VM name for the Noble build."
+  default = ""
+}

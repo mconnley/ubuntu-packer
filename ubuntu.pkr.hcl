@@ -89,7 +89,7 @@ source "vsphere-iso" "ubuntu-noble" {
   cpu_cores = var.vm_cpu_cores
   RAM = var.vm_mem_size
   //Location
-  vm_name = var.generic_vm_name
+  vm_name = var.noble_vm_name
   cluster = var.vsphere_cluster
   datastore = var.vsphere_datastore
   //Shutdown Configuration
