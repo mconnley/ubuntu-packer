@@ -203,8 +203,8 @@ source "vsphere-iso" "ubuntu-rancherlonghorn" {
   shutdown_timeout = "15m"
   //Wait Configuration
   //ISO Configuration
-  iso_url = var.iso_url
-  iso_checksum = var.iso_checksum
+  iso_url = var.iso_url_noble
+  iso_checksum = var.iso_checksum_noble
   //Create Configuration
   guest_os_type = var.vm_guest_os_type
   vm_version = var.vm_version
