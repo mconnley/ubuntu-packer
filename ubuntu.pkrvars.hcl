@@ -40,11 +40,11 @@ generic_vm_boot_command = [
   ]
 
 rancher_vm_boot_command = [
-    "c<wait>",
-    "linux /casper/vmlinuz ip=192.168.2.231::192.168.2.1:255.255.255.0::::192.168.2.33:192.168.2.34:192.168.2.1 --- autoinstall ds=\"nocloud-net;seedfrom=http://{{.HTTPIP}}:{{.HTTPPort}}/rancher/\"",
-    "<enter><wait>",
+    "c<wait3s>",
+    "linux /casper/vmlinuz ip=192.168.2.231::192.168.2.1:255.255.255.0::::192.168.2.33:192.168.2.34:192.168.2.1 --- autoinstall ds=\"nocloud-net;seedfrom=http://{{.HTTPIP}}:{{.HTTPPort}}/noble/\"",
+    "<enter><wait3s>",
     "initrd /casper/initrd",
-    "<enter><wait>",
+    "<enter><wait3s>",
     "boot",
     "<enter>"
   ]
