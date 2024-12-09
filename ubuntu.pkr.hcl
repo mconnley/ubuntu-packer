@@ -276,12 +276,11 @@ source "vsphere-iso" "ubuntu-rancherlonghorn" {
 build {
   name = "generic"
   sources = [
-    "vsphere-iso.ubuntu-noble"
-    /*
+    "vsphere-iso.ubuntu-noble",
     "vsphere-iso.ubuntu-generic",
     "vsphere-iso.ubuntu-rancher",
     "vsphere-iso.ubuntu-rancherlonghorn",
-    "vmware-iso.ubuntu-20-generic"*/
+    "vmware-iso.ubuntu-20-generic"
     ]
   provisioner "file" {
     source = "files/postbuild_job.sh"
