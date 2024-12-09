@@ -237,38 +237,6 @@ source "vsphere-iso" "ubuntu-rancherlonghorn" {
   ssh_handshake_attempts = "100000"
 }
 
-/*source "vmware-iso" "ubuntu-20-generic" {
-  guest_os_type = var.vm_guest_os_type
-  vm_name = var.generic_vm_name_20
-  cpus = var.vm_cpu_sockets
-  cores = var.vm_cpu_cores
-  memory = var.vm_mem_size
-  disk_adapter_type = "pvscsi"
-  disk_size = var.vm_disk_size
-  disk_type_id = 0
-  network_adapter_type = "vmxnet3"
-  network = "NAT"
-  iso_url = var.iso_url_20
-  iso_checksum = var.iso_checksum_20
-  http_directory = var.http_directory
-  boot_wait = var.vm_boot_wait
-  boot_command = var.generic_vm_boot_command_20
-  ssh_password = var.ssh_password
-  ssh_username = var.ssh_username
-  ssh_port = 22
-  ssh_timeout = "30m"
-  ssh_handshake_attempts = "100000"
-  shutdown_command = var.vm_shutdown_command_text
-  shutdown_timeout = "15m"
-  output_directory = "x:\\packer_builds\\ubuntu-20-generic"
-  format = "ova"
-  vmx_data = { 
-    "vmx.scoreboard.enabled" = "FALSE" 
-    "virtualhw.version" = "20"
-    }
-  ovftool_options = ["-dm=thin", "--maxVirtualHardwareVersion=20" ]
-}
-*/
 //////////////////////////////////////////////////////////////////////////////////
 // BUILD
 //////////////////////////////////////////////////////////////////////////////////
