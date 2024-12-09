@@ -59,6 +59,17 @@ rancherlonghorn_vm_boot_command = [
     "<enter>"
   ]
 
+noble_vm_boot_command = [
+    "c<wait3s>",
+    "linux /casper/vmlinuz ip=192.168.2.233::192.168.2.1:255.255.255.0::::192.168.2.33:192.168.2.34:192.168.2.1 --- autoinstall ds=\"nocloud-net;seedfrom=http://{{.HTTPIP}}:{{.HTTPPort}}/noble/\"",
+    "<enter><wait3s>",
+    "initrd /casper/initrd",
+    "<enter><wait3s>",
+    "boot",
+    "<enter>"
+  ]
+
+
 generic_vm_boot_command_20 = [
     " <wait><enter><wait>",
     "<f6><esc>",
@@ -82,6 +93,7 @@ generic_vm_name             = "ubuntu_template"
 generic_vm_name_20          = "ubuntu_template_20"
 rancher_vm_name             = "ubuntu_rancher_template"
 rancherlonghorn_vm_name     = "ubuntu_rancher_longhorn_template"
+noble_vm_name               = "ubuntu_noble_template"
 
 # ISO Objects
 
@@ -91,6 +103,8 @@ iso_checksum               = "45f873de9f8cb637345d6e66a583762730bbea30277ef7b32c
 iso_url_20                 = "https://releases.ubuntu.com/focal/ubuntu-20.04.6-live-server-amd64.iso"
 iso_checksum_20            = "b8f31413336b9393ad5d8ef0282717b2ab19f007df2e9ed5196c13d8f9153c8b"
 
+iso_url_noble              = "https://releases.ubuntu.com/24.04.1/ubuntu-24.04.1-live-server-amd64.iso"
+iso_checksum_noble         = "e240e4b801f7bb68c20d1356b60968ad0c33a41d00d828e74ceb3364a0317be9"
 
 # Scripts
 shell_scripts               = ["./scripts/setup_ubuntu.sh"]

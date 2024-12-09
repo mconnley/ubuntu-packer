@@ -337,3 +337,27 @@ variable "ssh_timeout" {
   description = "The time to wait for ssh to become available before timing out. "
   default = "30m"
 }
+
+variable "noble_vm_boot_command" {
+  type = list(string)
+  description = "A list of boot commands."
+  default = []
+}
+
+variable iso_url_noble{
+  type = string
+  description = "the url to get the ISO from"
+  default = ""
+}
+
+variable "iso_checksum_noble" {
+  type    = string
+  description = "The SHA-512 checkcum of the ISO image."
+  default = ""
+}
+
+variable "noble_vm_name" {
+  type    = string
+  description = "The VM name for the Noble build."
+  default = ""
+}
