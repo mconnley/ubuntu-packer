@@ -41,7 +41,7 @@ generic_vm_boot_command = [
 
 rancher_vm_boot_command = [
     "c<wait3s>",
-    "linux /casper/vmlinuz ip=192.168.2.231::192.168.2.1:255.255.255.0::::192.168.2.33:192.168.2.34:192.168.2.1 --- autoinstall ds=\"nocloud-net;seedfrom=http://{{.HTTPIP}}:{{.HTTPPort}}/noble/\"",
+    "linux /casper/vmlinuz ip=192.168.2.231::192.168.2.1:255.255.255.0::::192.168.2.33:192.168.2.34:192.168.2.1 --- autoinstall ds=\"nocloud-net;seedfrom=http://{{.HTTPIP}}:{{.HTTPPort}}/rancher/\"",
     "<enter><wait3s>",
     "initrd /casper/initrd",
     "<enter><wait3s>",
@@ -61,7 +61,7 @@ rancherlonghorn_vm_boot_command = [
 
 noble_vm_boot_command = [
     "c<wait3s>",
-    "linux /casper/vmlinuz ip=192.168.2.233::192.168.2.1:255.255.255.0::::192.168.2.33:192.168.2.34:192.168.2.1 --- autoinstall ds=\"nocloud-net;seedfrom=http://{{.HTTPIP}}:{{.HTTPPort}}/rancher/\"",
+    "linux /casper/vmlinuz ip=192.168.2.233::192.168.2.1:255.255.255.0::::192.168.2.33:192.168.2.34:192.168.2.1 --- autoinstall ds=\"nocloud-net;seedfrom=http://{{.HTTPIP}}:{{.HTTPPort}}/noble/\"",
     "<enter><wait3s>",
     "initrd /casper/initrd",
     "<enter><wait3s>",
