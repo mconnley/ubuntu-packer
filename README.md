@@ -1,6 +1,6 @@
 # ubuntu-packer
 
-v0.2.0
+v0.5.0
 
 Root CA cert should be /files/secure/homelabrootcert.crt
 
