@@ -3,7 +3,7 @@ packer {
   required_plugins {
     vsphere = {
       source  = "github.com/hashicorp/vsphere"
-      version = ">= 1.2.4"
+      version = ">= 1.4.2"
     }
   }
 }
@@ -70,6 +70,56 @@ source "vsphere-iso" "ubuntu-generic" {
   ssh_handshake_attempts = "100000"
 }
 
+source "vsphere-iso" "ubuntu-noble" {
+  //General Builder Options
+  convert_to_template = true
+  //Boot Options
+  boot_wait = var.vm_boot_wait
+  boot_command = var.noble_vm_boot_command
+  //HTTP Options
+  http_directory = var.http_directory
+  //vSphere Connection
+  vcenter_server = var.vsphere_endpoint
+  username = var.vsphere_username
+  password = var.vsphere_password
+  insecure_connection = var.vsphere_insecure_connection
+  datacenter = var.vsphere_datacenter
+  //Hardware
+  CPUs = var.vm_cpu_sockets
+  cpu_cores = var.vm_cpu_cores
+  RAM = var.vm_mem_size
+  //Location
+  vm_name = var.noble_vm_name
+  cluster = var.vsphere_cluster
+  datastore = var.vsphere_datastore
+  //Shutdown Configuration
+  shutdown_command = var.vm_shutdown_command_text
+  shutdown_timeout = "15m"
+  //Wait Configuration
+  //ISO Configuration
+  iso_url = var.iso_url_noble
+  iso_checksum = var.iso_checksum_noble
+  //Create Configuration
+  guest_os_type = var.vm_guest_os_type
+  vm_version = var.vm_version
+  network_adapters {
+      network = var.vsphere_network
+      network_card = "vmxnet3"
+    }
+  disk_controller_type = ["pvscsi"]
+  storage {
+    disk_size = var.vm_disk_size
+    disk_thin_provisioned = true
+  }
+  //Export Configuration
+  //SSH Configuration
+  ssh_password = var.ssh_password
+  ssh_username = var.ssh_username
+  ssh_port = 22
+  ssh_timeout = var.ssh_timeout
+  ssh_handshake_attempts = "100000"
+}
+
 source "vsphere-iso" "ubuntu-rancher" {
   //General Builder Options
   convert_to_template = true
@@ -97,8 +147,8 @@ source "vsphere-iso" "ubuntu-rancher" {
   shutdown_timeout = "15m"
   //Wait Configuration
   //ISO Configuration
-  iso_url = var.iso_url
-  iso_checksum = var.iso_checksum
+  iso_url = var.iso_url_noble
+  iso_checksum = var.iso_checksum_noble
   //Create Configuration
   guest_os_type = var.vm_guest_os_type
   vm_version = var.vm_version
@@ -153,8 +203,8 @@ source "vsphere-iso" "ubuntu-rancherlonghorn" {
   shutdown_timeout = "15m"
   //Wait Configuration
   //ISO Configuration
-  iso_url = var.iso_url
-  iso_checksum = var.iso_checksum
+  iso_url = var.iso_url_noble
+  iso_checksum = var.iso_checksum_noble
   //Create Configuration
   guest_os_type = var.vm_guest_os_type
   vm_version = var.vm_version
@@ -187,38 +237,6 @@ source "vsphere-iso" "ubuntu-rancherlonghorn" {
   ssh_handshake_attempts = "100000"
 }
 
-/*source "vmware-iso" "ubuntu-20-generic" {
-  guest_os_type = var.vm_guest_os_type
-  vm_name = var.generic_vm_name_20
-  cpus = var.vm_cpu_sockets
-  cores = var.vm_cpu_cores
-  memory = var.vm_mem_size
-  disk_adapter_type = "pvscsi"
-  disk_size = var.vm_disk_size
-  disk_type_id = 0
-  network_adapter_type = "vmxnet3"
-  network = "NAT"
-  iso_url = var.iso_url_20
-  iso_checksum = var.iso_checksum_20
-  http_directory = var.http_directory
-  boot_wait = var.vm_boot_wait
-  boot_command = var.generic_vm_boot_command_20
-  ssh_password = var.ssh_password
-  ssh_username = var.ssh_username
-  ssh_port = 22
-  ssh_timeout = "30m"
-  ssh_handshake_attempts = "100000"
-  shutdown_command = var.vm_shutdown_command_text
-  shutdown_timeout = "15m"
-  output_directory = "x:\\packer_builds\\ubuntu-20-generic"
-  format = "ova"
-  vmx_data = { 
-    "vmx.scoreboard.enabled" = "FALSE" 
-    "virtualhw.version" = "20"
-    }
-  ovftool_options = ["-dm=thin", "--maxVirtualHardwareVersion=20" ]
-}
-*/
 //////////////////////////////////////////////////////////////////////////////////
 // BUILD
 //////////////////////////////////////////////////////////////////////////////////
@@ -226,10 +244,10 @@ source "vsphere-iso" "ubuntu-rancherlonghorn" {
 build {
   name = "generic"
   sources = [
+    "vsphere-iso.ubuntu-noble",
     "vsphere-iso.ubuntu-generic",
     "vsphere-iso.ubuntu-rancher",
-    "vsphere-iso.ubuntu-rancherlonghorn"/*,
-    "vmware-iso.ubuntu-20-generic"*/
+    "vsphere-iso.ubuntu-rancherlonghorn"
     ]
   provisioner "file" {
     source = "files/postbuild_job.sh"
@@ -242,14 +260,6 @@ build {
       "sed -i 's/REPLACE_USERNAME/${var.check_mk_username}/' /tmp/postbuild_job.sh",
       "sed -i 's/REPLACE_PASSWORD/${var.check_mk_password}/' /tmp/postbuild_job.sh"
     ]
-  }
-  provisioner "shell" {
-    execute_command = "echo '${var.ssh_password}' | {{.Vars}} sudo -S -E bash '{{.Path}}'"
-    environment_vars = [
-      "BUILD_USERNAME=${var.ssh_username}",
-    ]
-    scripts = var.shell_scripts
-    expect_disconnect = true
   }
   provisioner "file" {
     source = "files/99-disable-network-config.cfg"
@@ -277,5 +287,13 @@ build {
       "echo 'matt:${var.matt_password}' | sudo chpasswd",
       "sudo passwd -u matt"
     ]
+  }
+  provisioner "shell" {
+    execute_command = "echo '${var.ssh_password}' | {{.Vars}} sudo -S -E bash '{{.Path}}'"
+    environment_vars = [
+      "BUILD_USERNAME=${var.ssh_username}",
+    ]
+    scripts = var.shell_scripts
+    expect_disconnect = true
   }
 }
