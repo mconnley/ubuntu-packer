@@ -261,14 +261,6 @@ build {
       "sed -i 's/REPLACE_PASSWORD/${var.check_mk_password}/' /tmp/postbuild_job.sh"
     ]
   }
-  provisioner "shell" {
-    execute_command = "echo '${var.ssh_password}' | {{.Vars}} sudo -S -E bash '{{.Path}}'"
-    environment_vars = [
-      "BUILD_USERNAME=${var.ssh_username}",
-    ]
-    scripts = var.shell_scripts
-    expect_disconnect = true
-  }
   provisioner "file" {
     source = "files/99-disable-network-config.cfg"
     destination = "/tmp/99-disable-network-config.cfg"
@@ -295,5 +287,13 @@ build {
       "echo 'matt:${var.matt_password}' | sudo chpasswd",
       "sudo passwd -u matt"
     ]
+  }
+  provisioner "shell" {
+    execute_command = "echo '${var.ssh_password}' | {{.Vars}} sudo -S -E bash '{{.Path}}'"
+    environment_vars = [
+      "BUILD_USERNAME=${var.ssh_username}",
+    ]
+    scripts = var.shell_scripts
+    expect_disconnect = true
   }
 }
