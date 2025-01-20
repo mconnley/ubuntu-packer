@@ -97,8 +97,8 @@ noble_vm_name               = "ubuntu_noble_template"
 
 # ISO Objects
 
-iso_url                    = "https://releases.ubuntu.com/jammy/ubuntu-22.04.4-live-server-amd64.iso"
-iso_checksum               = "45f873de9f8cb637345d6e66a583762730bbea30277ef7b32c9c3bd6700a32b2"
+iso_url                    = "https://releases.ubuntu.com/jammy/ubuntu-22.04.5-live-server-amd64.iso"
+iso_checksum               = "9bc6028870aef3f74f4e16b900008179e78b130e6b0b9a140635434a46aa98b0"
 
 iso_url_20                 = "https://releases.ubuntu.com/focal/ubuntu-20.04.6-live-server-amd64.iso"
 iso_checksum_20            = "b8f31413336b9393ad5d8ef0282717b2ab19f007df2e9ed5196c13d8f9153c8b"
