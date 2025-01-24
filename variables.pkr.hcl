@@ -147,18 +147,6 @@ variable "iso_checksum" {
   default = ""
 }
 
-variable iso_url_20{
-  type = string
-  description = "the url to get the ISO from for ubuntu 20/focal"
-  default = ""
-}
-
-variable "iso_checksum_20" {
-  type    = string
-  description = "The SHA-512 checkcum of the ubuntu 20/focal ISO image."
-  default = ""
-}
-
 # HTTP Endpoint
 
 variable "http_directory" {
@@ -193,12 +181,6 @@ variable "rancherlonghorn_vm_name" {
   default = ""
 }
 
-variable "generic_vm_name_20" {
-  type    = string
-  description = "The VM name for the generic build."
-  default = ""
-}
-
 variable "vm_guest_os_vendor" {
   type    = string
   description = "The guest operating system vendor."
@@ -214,12 +196,6 @@ variable "vm_guest_os_member" {
 variable "vm_guest_os_version" {
   type    = string
   description = "The guest operating system version."
-  default = ""
-}
-
-variable "vm_guest_os_version_20" {
-  type    = string
-  description = "The guest operating system version for ubuntu 20/focal."
   default = ""
 }
 
@@ -315,12 +291,6 @@ variable "rancher_vm_boot_command" {
 }
 
 variable "rancherlonghorn_vm_boot_command" {
-  type = list(string)
-  description = "A list of boot commands."
-  default = []
-}
-
-variable "generic_vm_boot_command_20" {
   type = list(string)
   description = "A list of boot commands."
   default = []
