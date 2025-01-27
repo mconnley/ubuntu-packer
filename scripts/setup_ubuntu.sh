@@ -1,4 +1,6 @@
 #!/bin/bash
+echo '> Removing group staff...'
+groupdel staff
 echo '> Moving firstboot script...'
 mv /tmp/postbuild_job.sh /usr/local/bin/postbuild_job.sh
 echo ' Setting firstboot script to executable...'
