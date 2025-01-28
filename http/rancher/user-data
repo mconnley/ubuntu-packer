@@ -163,3 +163,4 @@ autoinstall:
     - curtin in-target --target=/target -- chmod 440 /etc/sudoers.d/packer
     - curtin in-target --target=/target -- apt-get update
     - curtin in-target --target=/target -- apt-get upgrade --yes
+    - curtin in-target --target=/target -- groupdel staff
