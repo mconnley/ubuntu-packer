@@ -30,7 +30,7 @@ ssh_timeout                 = "45m"
 
 generic_vm_boot_command = [
     "c<wait>",
-    "linux /casper/vmlinuz ip=192.168.2.230::192.168.2.1:255.255.255.0::::192.168.2.33:192.168.2.34:192.168.2.1 --- autoinstall ds=\"nocloud-net;seedfrom=http://{{.HTTPIP}}:{{.HTTPPort}}/generic/\"",
+    "linux /casper/vmlinuz ip=192.168.2.230::192.168.2.1:255.255.255.0::::192.168.2.33:192.168.2.34:192.168.2.1 --- autoinstall ipv6.disable=1 ds=\"nocloud-net;seedfrom=http://{{.HTTPIP}}:{{.HTTPPort}}/generic/\"",
     "<enter><wait>",
     "initrd /casper/initrd",
     "<enter><wait>",
@@ -40,7 +40,7 @@ generic_vm_boot_command = [
 
 rancher_vm_boot_command = [
     "c<wait3s>",
-    "linux /casper/vmlinuz ip=192.168.2.231::192.168.2.1:255.255.255.0::::192.168.2.33:192.168.2.34:192.168.2.1 --- autoinstall ds=\"nocloud-net;seedfrom=http://{{.HTTPIP}}:{{.HTTPPort}}/rancher/\"",
+    "linux /casper/vmlinuz ip=192.168.2.231::192.168.2.1:255.255.255.0::::192.168.2.33:192.168.2.34:192.168.2.1 --- autoinstall ipv6.disable=1 ds=\"nocloud-net;seedfrom=http://{{.HTTPIP}}:{{.HTTPPort}}/rancher/\"",
     "<enter><wait3s>",
     "initrd /casper/initrd",
     "<enter><wait3s>",
@@ -50,7 +50,7 @@ rancher_vm_boot_command = [
 
 rancherlonghorn_vm_boot_command = [
     "c<wait3s>",
-    "linux /casper/vmlinuz ip=192.168.2.232::192.168.2.1:255.255.255.0::::192.168.2.33:192.168.2.34:192.168.2.1 --- autoinstall ds=\"nocloud-net;seedfrom=http://{{.HTTPIP}}:{{.HTTPPort}}/rancherlonghorn/\"",
+    "linux /casper/vmlinuz ip=192.168.2.232::192.168.2.1:255.255.255.0::::192.168.2.33:192.168.2.34:192.168.2.1 --- autoinstall ipv6.disable=1 ds=\"nocloud-net;seedfrom=http://{{.HTTPIP}}:{{.HTTPPort}}/rancherlonghorn/\"",
     "<enter><wait3s>",
     "initrd /casper/initrd",
     "<enter><wait3s>",
@@ -60,7 +60,7 @@ rancherlonghorn_vm_boot_command = [
 
 noble_vm_boot_command = [
     "c<wait3s>",
-    "linux /casper/vmlinuz ip=192.168.2.233::192.168.2.1:255.255.255.0::::192.168.2.33:192.168.2.34:192.168.2.1 --- autoinstall ds=\"nocloud-net;seedfrom=http://{{.HTTPIP}}:{{.HTTPPort}}/noble/\"",
+    "linux /casper/vmlinuz ip=192.168.2.233::192.168.2.1:255.255.255.0::::192.168.2.33:192.168.2.34:192.168.2.1 --- autoinstall ipv6.disable=1 ds=\"nocloud-net;seedfrom=http://{{.HTTPIP}}:{{.HTTPPort}}/noble/\"",
     "<enter><wait3s>",
     "initrd /casper/initrd",
     "<enter><wait3s>",
