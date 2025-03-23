@@ -77,8 +77,8 @@ noble_vm_name               = "ubuntu_noble_template"
 iso_url                    = "https://releases.ubuntu.com/jammy/ubuntu-22.04.5-live-server-amd64.iso"
 iso_checksum               = "9bc6028870aef3f74f4e16b900008179e78b130e6b0b9a140635434a46aa98b0"
 
-iso_url_noble              = "https://releases.ubuntu.com/24.04.1/ubuntu-24.04.1-live-server-amd64.iso"
-iso_checksum_noble         = "e240e4b801f7bb68c20d1356b60968ad0c33a41d00d828e74ceb3364a0317be9"
+iso_url_noble              = "https://releases.ubuntu.com/noble/ubuntu-24.04.2-live-server-amd64.iso"
+iso_checksum_noble         = "d6dab0c3a657988501b4bd76f1297c053df710e06e0c3aece60dead24f270b4d"
 
 # Scripts
 shell_scripts               = ["./scripts/setup_ubuntu.sh"]
