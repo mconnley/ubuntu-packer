@@ -12,9 +12,9 @@ mv /tmp/multipath.conf /etc/multipath.conf
 echo '> Executing apt-get dist-upgrade...'
 apt-get -y dist-upgrade
 echo '> Installing Checkmk Agent...'
-wget https://checkmk.mattconnley.com/homelab/check_mk/agents/check-mk-agent_2.3.0p12-1_all.deb -O /root/check-mk-agent_2.3.0p12-1_all.deb
-dpkg -i /root/check-mk-agent_2.3.0p12-1_all.deb
-rm /root/check-mk-agent_2.3.0p12-1_all.deb
+wget https://checkmk.mattconnley.com/homelab/check_mk/agents/check-mk-agent_2.3.0p25-1_all.deb -O /root/check-mk-agent_2.3.0p25-1_all.deb
+dpkg -i /root/check-mk-agent_2.3.0p25-1_all.deb
+rm /root/check-mk-agent_2.3.0p25-1_all.deb
 echo '> Cleaning apt-get ...'
 apt-get -y autoremove
 apt-get -y clean
