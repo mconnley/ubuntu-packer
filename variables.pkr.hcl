@@ -1,3 +1,104 @@
+variable "proxmox_url" {
+  type        = string
+  description = "The URL of the Proxmox server."
+  default     = ""
+  sensitive   = true
+}
+
+variable "proxmox_username" {
+  type        = string
+  description = "The username to authenticate to Proxmox."
+  default     = ""
+  sensitive   = true
+}
+
+variable "proxmox_token" {
+  type        = string
+  description = "The Proxmox API token to use for authentication."
+  default     = ""
+  sensitive   = true
+}
+
+variable "proxmox_node" {
+  type        = string
+  description = "The Proxmox node to use for the build."
+  default     = ""
+}
+
+variable "proxmox_task_timeout" {
+  type        = string
+  description = "The timeout for Proxmox tasks."
+  default     = "30m"
+}
+
+variable "iso_storage_pool" {
+  type        = string
+  description = "The storage pool to use for ISO images."
+  default     = "local"
+}
+
+variable "vm_os" {
+  type        = string
+  description = "The operating system type for the VM."
+  default     = "l26"
+}
+
+variable "vm_scsi_controller" {
+  type        = string
+  description = "The type of SCSI controller to use for the VM."
+  default     = "virtio-scsi-pci"
+}
+
+variable "vm_network_model" {
+  type        = string
+  description = "The network model for the VM."
+  default     = "virtio"
+}
+
+variable "vm_network_bridge" {
+  type        = string
+  description = "The network bridge to connect the VM to."
+  default     = "vmbr0"
+}
+
+variable "vm_storage_pool" {
+  type        = string
+  description = "The storage pool to use for the VM."
+  default     = "local-lvm"
+}
+
+variable "vm_disk_type" {
+  type        = string
+  description = "The type of disk to use for the VM."
+  default     = "scsi"
+}
+variable "vm_disk_discard" {
+  type        = bool
+  description = "Whether to enable discard for the VM disk."
+  default     = true
+}
+
+variable "vm_disk_format" {
+  type        = string
+  description = "The format of the VM disk."
+  default     = "qcow2"
+}
+variable "vm_disk_iothread" {
+  type        = bool
+  description = "Whether to enable I/O threads for the VM disk."
+  default     = false
+}
+variable "vm_disk_ssd" {
+  type        = bool
+  description = "Whether the VM disk is on SSD storage."
+  default     = false
+}
+variable "vm_shutdown_timeout" {
+  type        = string
+  description = "The timeout for the VM shutdown command."
+  default     = "5m"
+}
+
 variable "ssh_username" {
   type        = string
   description = "The username to use to authenticate over SSH."
@@ -47,80 +148,6 @@ variable "check_mk_password" {
   sensitive   = true
 }
 
-// vSphere Settings
-
-variable "vsphere_endpoint" {
-  type        = string
-  description = "FQDN or IP address of vCenter"
-  default     = ""
-  sensitive   = true
-
-}
-
-variable "vsphere_username" {
-  type        = string
-  description = "Username to log in to vCenter"
-  sensitive   = true
-}
-
-variable "vsphere_password" {
-  type        = string
-  description = "Password to log in to vCenter"
-  sensitive   = true
-}
-
-variable "vsphere_insecure_connection" {
-  type        = bool
-  description = "Do not validate vCenter Server TLS certificate."
-}
-
-variable "vsphere_datacenter" {
-  type        = string
-  description = "The name of the target vSphere datacenter."
-  default     = ""
-}
-
-variable "vsphere_cluster" {
-  type        = string
-  description = "The name of the target vSphere cluster."
-  default     = ""
-}
-
-variable "vsphere_host" {
-  type        = string
-  description = "The name of the target ESXi host."
-  default     = ""
-}
-
-variable "vsphere_datastore" {
-  type        = string
-  description = "The name of the target vSphere datastore."
-}
-
-variable "vsphere_network" {
-  type        = string
-  description = "The name of the target vSphere network segment."
-  default = ""
-}
-
-variable "vsphere_folder" {
-  type        = string
-  description = "The name of the target vSphere folder."
-  default     = ""
-}
-
-variable "vsphere_resource_pool" {
-  type        = string
-  description = "The name of the target vSphere resource pool."
-  default     = ""
-}
-
-variable "vsphere_set_host_for_datastore_uploads" {
-  type        = bool
-  description = "Set this to true if packer should use the host for uploading files to the datastore."
-  default     = false
-}
-
 # ISO Objects
 
 variable "iso_path" {
@@ -132,6 +159,18 @@ variable "iso_path" {
 variable iso_file{
   type = string
   description = "The file name of the guest operating system ISO image installation media."
+  default = ""
+}
+
+variable iso_url_noble{
+  type = string
+  description = "the url to get the ISO from"
+  default = ""
+}
+
+variable "iso_checksum_noble" {
+  type    = string
+  description = "The SHA-512 checkcum of the ISO image."
   default = ""
 }
 
@@ -157,71 +196,6 @@ variable "http_directory" {
 
 # Virtual Machine Settings
 
-variable "vm_guest_os_family" {
-  type    = string
-  description = "The guest operating system family."
-  default = ""
-}
-
-variable "generic_vm_name" {
-  type    = string
-  description = "The VM name for the generic build."
-  default = ""
-}
-
-variable "rancher_vm_name" {
-  type    = string
-  description = "The VM name for the Rancher build."
-  default = ""
-}
-
-variable "rancherlonghorn_vm_name" {
-  type    = string
-  description = "The VM name for the Rancher+Longhorn build."
-  default = ""
-}
-
-variable "vm_guest_os_vendor" {
-  type    = string
-  description = "The guest operating system vendor."
-  default = ""
-}
-
-variable "vm_guest_os_member" {
-  type    = string
-  description = "The guest operating system member."
-  default = ""
-}
-
-variable "vm_guest_os_version" {
-  type    = string
-  description = "The guest operating system version."
-  default = ""
-}
-
-variable "vm_guest_os_type" {
-  type    = string
-  description = "The guest operating system type, also know as guestid."
-  default = ""
-}
-
-variable vm_version {
-  type = number
-  description = "The VM virtual hardware version."
-  # https://kb.vmware.com/s/article/1003746
-}
-
-variable "vm_firmware" {
-  type    = string
-  description = "The virtual machine firmware. (e.g. 'bios' or 'efi')"
-  default = ""
-}
-
-variable "vm_cdrom_type" {
-  type    = string
-  description = "The virtual machine CD-ROM type."
-  default = ""
-}
 
 variable "vm_cpu_sockets" {
   type = number
@@ -239,25 +213,8 @@ variable "vm_mem_size" {
 }
 
 variable "vm_disk_size" {
-  type = number
-  description = "The size for the main disk in MB."
-}
-
-variable "vm_docker_disk_size" {
-  type = number
-  description = "The size for the Docker disk in MB."
-  default = 32768
-}
-
-variable "vm_longhorn_disk_size" {
-  type = number
-  description = "The size for the Docker disk in MB."
-  default = 32768
-}
-
-variable "vm_disk_controller_type" {
-  type = list(string)
-  description = "The virtual disk controller types in sequence."
+  type = string
+  description = "The size of the disk, including a unit suffix, such as 10G to indicate 10 gigabytes"
 }
 
 variable "vm_network_card" {
@@ -275,24 +232,6 @@ variable "vm_boot_wait" {
 variable "shell_scripts" {
   type = list(string)
   description = "A list of scripts."
-  default = []
-}
-
-variable "generic_vm_boot_command" {
-  type = list(string)
-  description = "A list of boot commands."
-  default = []
-}
-
-variable "rancher_vm_boot_command" {
-  type = list(string)
-  description = "A list of boot commands."
-  default = []
-}
-
-variable "rancherlonghorn_vm_boot_command" {
-  type = list(string)
-  description = "A list of boot commands."
   default = []
 }
 
@@ -314,17 +253,6 @@ variable "noble_vm_boot_command" {
   default = []
 }
 
-variable iso_url_noble{
-  type = string
-  description = "the url to get the ISO from"
-  default = ""
-}
-
-variable "iso_checksum_noble" {
-  type    = string
-  description = "The SHA-512 checkcum of the ISO image."
-  default = ""
-}
 
 variable "noble_vm_name" {
   type    = string

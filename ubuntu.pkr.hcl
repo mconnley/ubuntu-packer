@@ -1,9 +1,9 @@
 packer {
   required_version = ">= 1.10.0"
   required_plugins {
-    vsphere = {
-      source  = "github.com/hashicorp/vsphere"
-      version = ">= 1.4.2"
+    name = {
+      version = "~> 1"
+      source  = "github.com/hashicorp/proxmox"
     }
   }
 }
@@ -21,48 +21,60 @@ locals {
 // SOURCES
 //////////////////////////////////////////////////////////////////////////////////
 
-source "vsphere-iso" "ubuntu-noble" {
+source "proxmox-iso" "ubuntu-noble" {
   //General Builder Options
-  convert_to_template = true
+
+  //ISO Configuration
+  boot_iso {
+    iso_url = var.iso_url_noble
+    iso_checksum = var.iso_checksum_noble
+    unmount = true
+    iso_storage_pool = var.iso_storage_pool
+  }
+
   //Boot Options
   boot_wait = var.vm_boot_wait
   boot_command = var.noble_vm_boot_command
+
   //HTTP Options
   http_directory = var.http_directory
-  //vSphere Connection
-  vcenter_server = var.vsphere_endpoint
-  username = var.vsphere_username
-  password = var.vsphere_password
-  insecure_connection = var.vsphere_insecure_connection
-  datacenter = var.vsphere_datacenter
-  //Hardware
-  CPUs = var.vm_cpu_sockets
-  cpu_cores = var.vm_cpu_cores
-  RAM = var.vm_mem_size
-  //Location
+  
+  //Proxmox Connection
+  proxmox_url = var.proxmox_url
+  username = var.proxmox_username
+  token = var.proxmox_token
+  node = var.proxmox_node
+  task_timeout = var.proxmox_task_timeout
+
+  //VM and Template Configuration
   vm_name = var.noble_vm_name
-  cluster = var.vsphere_cluster
-  datastore = var.vsphere_datastore
-  //Shutdown Configuration
-  shutdown_command = var.vm_shutdown_command_text
-  shutdown_timeout = "15m"
-  //Wait Configuration
-  //ISO Configuration
-  iso_url = var.iso_url_noble
-  iso_checksum = var.iso_checksum_noble
-  //Create Configuration
-  guest_os_type = var.vm_guest_os_type
-  vm_version = var.vm_version
+  template_description = "Ubuntu Noble Template - ${local.buildtime}"
+  template_name = var.noble_vm_name
+  os = var.vm_os
+  cloud_init = true
+  cloud_init_storage_pool = var.vm_storage_pool
+
+  //Hardware
+  sockets = var.vm_cpu_sockets
+  cores = var.vm_cpu_cores
+  memory = var.vm_mem_size
+  scsi_controller = var.vm_scsi_controller
   network_adapters {
-      network = var.vsphere_network
-      network_card = "vmxnet3"
-    }
-  disk_controller_type = ["pvscsi"]
-  storage {
-    disk_size = var.vm_disk_size
-    disk_thin_provisioned = true
+    model = var.vm_network_model
+    bridge = var.vm_network_bridge
+
   }
-  //Export Configuration
+
+  disks {
+    disk_size = var.vm_disk_size
+    storage_pool = var.vm_storage_pool
+    type = var.vm_disk_type
+    discard = var.vm_disk_discard
+    //format = var.vm_disk_format
+    io_thread = var.vm_disk_iothread
+    ssd = var.vm_disk_ssd
+  }
+
   //SSH Configuration
   ssh_password = var.ssh_password
   ssh_username = var.ssh_username
@@ -78,10 +90,7 @@ source "vsphere-iso" "ubuntu-noble" {
 build {
   name = "generic"
   sources = [
-    "vsphere-iso.ubuntu-noble",
-    "vsphere-iso.ubuntu-generic",
-    "vsphere-iso.ubuntu-rancher",
-    "vsphere-iso.ubuntu-rancherlonghorn"
+    "proxmox-iso.ubuntu-noble"
     ]
   provisioner "file" {
     source = "files/postbuild_job.sh"
