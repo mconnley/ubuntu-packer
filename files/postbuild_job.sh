@@ -4,8 +4,8 @@ checkmkfqdn='REPLACE_FQDN'
 checkmksite='REPLACE_SITE'
 checkmkusername='REPLACE_USERNAME'
 checkmkpassword='REPLACE_PASSWORD'
-deleteurl="http://$checkmkfqdn/$checkmksite/check_mk/api/1.0/objects/host_config/$host"
-posturl="http://$checkmkfqdn/$checkmksite/check_mk/api/1.0/domain-types/host_config/collections/all?bake_agent=false"
+deleteurl="https://$checkmkfqdn/$checkmksite/check_mk/api/1.0/objects/host_config/$host"
+posturl="https://$checkmkfqdn/$checkmksite/check_mk/api/1.0/domain-types/host_config/collections/all?bake_agent=false"
 body_template='"folder": "/", "host_name": "%s"'
 body_json_string=$(printf "$body_template" "$host")
 auth_template='Authorization: Bearer %s %s'
