@@ -1,6 +1,6 @@
 # ubuntu-packer
 
-v0.9.0
+v0.10.0
 
 Root CA cert should be /files/secure/homelabrootcert.crt
 
@@ -14,10 +14,10 @@ check_mk_fqdn                   = "checkmk.domain.tld"
 check_mk_site                   = "checkmk-site-name"
 check_mk_username               = "check_mk_username"
 check_mk_password               = "check_mk_password"
-vsphere_endpoint                = "vCenter_fqdn"
-vsphere_username                = "vCenter_username"
-vsphere_password                = "vCenter_password"
-vsphere_datastore               = "template_datastore"
-vsphere_network                 = "template_network_name"
-vsphere_cluster                 = "cluster_name"
+proxmox_url                     = "https://someproxmoxhost.domain.tld:8006/api2/json"
+proxmox_username                = "root@pam!someuser"
+proxmox_token                   = "proxmox-token-guid-"
+proxmox_node                    = "someproxmoxhost"
+iso_storage_pool                = "nfs-storage-pool"
+vm_storage_pool                 = "vm-storage-pool"
 ```
