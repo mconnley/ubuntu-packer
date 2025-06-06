@@ -1,4 +1,6 @@
 #!/bin/bash
+echo '> Setting timezone to America/Chicago ...'
+timedatectl set-timezone America/Chicago
 echo '> Removing group staff...'
 groupdel staff
 echo '> Moving firstboot script...'

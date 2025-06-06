@@ -1,6 +1,7 @@
 # Cache objects
 packer_cache/
 files/secure
+downloaded_iso_path/
 
 # Crash log
 crash.log

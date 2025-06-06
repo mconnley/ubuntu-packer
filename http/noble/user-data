@@ -51,7 +51,7 @@ autoinstall:
         }
       - { path: /, device: format-0, type: mount, id: mount-0 }
   packages:
-    - open-vm-tools
+    - qemu-guest-agent
     - net-tools
     - salt-minion
     - unzip
