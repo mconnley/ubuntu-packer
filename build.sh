@@ -1,1 +1,2 @@
+#!/bin/sh
 packer build -var-file=ubuntu.pkrvars.hcl -var-file=sensitive.pkrvars.hcl -force .
