@@ -20,8 +20,6 @@ rm /root/check-mk-agent_2.3.0p25-1_all.deb
 echo '> Cleaning apt-get ...'
 apt-get -y autoremove
 apt-get -y clean
-echo '> Cleaning up salt minion...'
-rm /etc/salt/minion_id
 echo '> Enabling VMWare custom scripts...'
 vmware-toolbox-cmd config set deployPkg enable-custom-scripts true
 echo '> Cleaning all audit logs ...'

@@ -53,7 +53,6 @@ autoinstall:
   packages:
     - qemu-guest-agent
     - net-tools
-    - salt-minion
     - unzip
     - nfs-common
     - duf
@@ -85,8 +84,6 @@ autoinstall:
     - sed -i -e 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/g' /target/etc/ssh/sshd_config
     - sed -i -e 's/^#\?PermitRootLogin.*/PermitRootLogin yes/g' /target/etc/ssh/sshd_config
     - echo 'packer ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/packer
-    - curtin in-target --target=/target -- systemctl disable salt-minion
-    - curtin in-target --target=/target -- systemctl stop salt-minion
     - curtin in-target --target=/target -- chmod 440 /etc/sudoers.d/packer
     - curtin in-target --target=/target -- apt-get update
     - curtin in-target --target=/target -- apt-get upgrade --yes
