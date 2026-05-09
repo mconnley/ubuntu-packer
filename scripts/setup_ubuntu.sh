@@ -20,8 +20,6 @@ rm /root/check-mk-agent_2.3.0p25-1_all.deb
 echo '> Cleaning apt-get ...'
 apt-get -y autoremove
 apt-get -y clean
-echo '> Enabling VMWare custom scripts...'
-vmware-toolbox-cmd config set deployPkg enable-custom-scripts true
 echo '> Cleaning all audit logs ...'
 if [ -f /var/log/audit/audit.log ]; then
 cat /dev/null > /var/log/audit/audit.log

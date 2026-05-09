@@ -152,7 +152,7 @@ variable "check_mk_password" {
 
 variable "iso_path" {
   type    = string
-  description = "The path on the source vSphere datastore for ISO images."
+  description = "The path on the Proxmox storage for ISO images."
   default = ""
   }
 
