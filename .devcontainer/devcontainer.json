@@ -17,7 +17,8 @@
 				"github.copilot-chat",
 				"ms-azuretools.vscode-containers",
 				"ms-vscode-remote.remote-containers",
-				"vector-of-bool.gitflow",
+				"anthropic.claude-code",
+				"GitTower.git-flow-next-extension",
 				"yzhang.markdown-all-in-one",
 				"zainchen.json"
 			]
