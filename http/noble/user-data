@@ -56,6 +56,9 @@ autoinstall:
     - unzip
     - nfs-common
     - duf
+  mounts:
+    - [ "192.168.2.98:/MCRoot", "/nas/MCRoot", "nfs", "defaults,nofail,_netdev", "0", "0" ]
+    - [ "192.168.2.98:/nfsbackup", "/nas/nfsbackup", "nfs", "defaults,nofail,_netdev", "0", "0" ]
   apt:
     primary:
       - arches: [i386, amd64]
