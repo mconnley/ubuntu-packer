@@ -77,7 +77,7 @@ autoinstall:
         lock_passwd: true
         sudo: ALL=(ALL) NOPASSWD:ALL
         ssh_authorized_keys:
-          - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINKrPIcpcC5y+TECqMeDzdW+45PO/Ddw+/TQzheQD+bN ansible-homelab          
+          - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINKrPIcpcC5y+TECqMeDzdW+45PO/Ddw+/TQzheQD+bN ansible-homelab
     chpasswd: 
       expire: false
   late-commands:
