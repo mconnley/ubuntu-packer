@@ -9,7 +9,7 @@ autoinstall:
   ssh:
     install-server: yes
     allow-pw: yes
- storage:
+  storage:
     config:
       - {
           ptable: gpt,
