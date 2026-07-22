@@ -1,4 +1,0 @@
-#cloud-config
-runcmd:
-  - echo "true" > /home/rancher/provisioned
-  - deluser --remove-home packer

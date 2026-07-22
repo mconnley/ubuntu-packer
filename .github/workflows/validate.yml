@@ -1,0 +1,75 @@
+##################################################################################
+# Formatting and validation for every release.
+#
+# This exists because of a specific past failure: `vm_shutdown_command_text` was
+# defined in a var file and referenced by nothing, so the build user was never
+# deleted and shipped in every clone. `packer validate` catches exactly that
+# class of bug — a variable that is set but unwired, or wired but unset.
+##################################################################################
+name: validate
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        release: [noble, resolute]
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: hashicorp/setup-packer@main
+        with:
+          version: latest
+
+      - name: stub the gitignored root CA
+        # The real CA lives at files/secure/ and is never committed, but Packer's
+        # file provisioner stats its sources during validate — so a fresh checkout
+        # fails without a placeholder.
+        run: |
+          mkdir -p files/secure
+          touch files/secure/homelabrootcert.crt
+
+      - name: packer init
+        run: packer init .
+
+      - name: packer fmt -check
+        run: packer fmt -check -diff -recursive .
+
+      - name: packer validate (${{ matrix.release }})
+        # Credentials are not available to CI and are not needed to check that
+        # the template is well-formed and fully wired. Dummy values satisfy the
+        # required variables; -evaluate-datasources is off so nothing reaches out
+        # to Proxmox.
+        run: |
+          packer validate \
+            -var-file=common.pkrvars.hcl \
+            -var-file=releases/${{ matrix.release }}.pkrvars.hcl \
+            -var 'proxmox_url=https://ci.invalid:8006/api2/json' \
+            -var 'proxmox_username=ci@pam!ci' \
+            -var 'proxmox_token=00000000-0000-0000-0000-000000000000' \
+            -var 'proxmox_node=ci' \
+            -var 'iso_storage_pool=ci' \
+            -var 'vm_storage_pool=ci' \
+            -var 'check_mk_fqdn=ci.invalid' \
+            -var 'check_mk_site=ci' \
+            -var 'check_mk_username=ci' \
+            -var 'check_mk_password=ci' \
+            .
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: shellcheck
+        # -S error to start with, so CI reports genuine breakage rather than
+        # style opinions. Tighten to warning once the existing output is clean.
+        run: shellcheck -S error build.sh scripts/setup_ubuntu.sh files/postbuild_job.sh

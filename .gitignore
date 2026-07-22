@@ -1,15 +1,17 @@
-# Cache objects
+# Packer working state
 packer_cache/
-files/secure
 downloaded_iso_path/
-
-# Crash log
 crash.log
-
-# For built boxes
 *.box
 
+# Secrets.
+#
+# The internal root CA private material and any local var file. The negation is
+# load-bearing: without it `sensitive*` would also swallow the committed example
+# file that documents the contract.
+files/secure
 sensitive*
+!sensitive.pkrvars.hcl.example
 
 # Auto-generated dev container lockfile
 .devcontainer/devcontainer-lock.json

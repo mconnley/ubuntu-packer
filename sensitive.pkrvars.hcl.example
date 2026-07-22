@@ -1,0 +1,43 @@
+##################################################################################
+# TEMPLATE for sensitive.pkrvars.hcl — copy, fill in, and never commit.
+#
+#   cp sensitive.pkrvars.hcl.example sensitive.pkrvars.hcl
+#
+# sensitive.pkrvars.hcl is gitignored. Every value below is marked
+# `sensitive = true` in variables.pkr.hcl, so Packer redacts them from its output.
+#
+# Note what is NOT here: any account password.
+#
+#   * The build user's password is generated per run (uuidv4) inside
+#     ubuntu.pkr.hcl, injected over Packer's in-memory HTTP server, and the
+#     account is deleted before the template is sealed.
+#   * matt and ansible are key-only in the image. matt's console password is set
+#     post-boot by ansible-homelab (configure_users, from OpenBao).
+#
+# The only credentials below are for services the build itself talks to.
+##################################################################################
+
+##################################################################################
+# Proxmox
+#
+# An API token, not a password. Create with:
+#   pveum user token add root@pam packer --privsep 0
+##################################################################################
+
+proxmox_url      = "https://pvehost1.example.com:8006/api2/json"
+proxmox_username = "root@pam!packer"
+proxmox_token    = "00000000-0000-0000-0000-000000000000"
+proxmox_node     = "pvehost1"
+iso_storage_pool = "your-iso-pool"
+vm_storage_pool  = "your-vm-pool"
+
+##################################################################################
+# Checkmk
+#
+# An automation user's secret, from Checkmk's "Users" page.
+##################################################################################
+
+check_mk_fqdn     = "checkmk.example.com"
+check_mk_site     = "your-site"
+check_mk_username = "automation"
+check_mk_password = "REPLACE"
