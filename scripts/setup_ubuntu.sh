@@ -14,16 +14,12 @@ mv /tmp/multipath.conf /etc/multipath.conf
 echo '> Executing apt-get dist-upgrade...'
 apt-get -y dist-upgrade
 echo '> Installing Checkmk Agent...'
-wget https://checkmk.mattconnley.com/homelab/check_mk/agents/check-mk-agent_2.3.0p25-1_all.deb -O /root/check-mk-agent_2.3.0p25-1_all.deb
-dpkg -i /root/check-mk-agent_2.3.0p25-1_all.deb
-rm /root/check-mk-agent_2.3.0p25-1_all.deb
+wget https://checkmk.mattconnley.com/homelab/check_mk/agents/check-mk-agent_2.4.0p17-1_all.deb -O /root/check-mk-agent_2.4.0p17-1_all.deb
+dpkg -i /root/check-mk-agent_2.4.0p17-1_all.deb
+rm /root/check-mk-agent_2.4.0p17-1_all.deb
 echo '> Cleaning apt-get ...'
 apt-get -y autoremove
 apt-get -y clean
-echo '> Cleaning up salt minion...'
-rm /etc/salt/minion_id
-echo '> Enabling VMWare custom scripts...'
-vmware-toolbox-cmd config set deployPkg enable-custom-scripts true
 echo '> Cleaning all audit logs ...'
 if [ -f /var/log/audit/audit.log ]; then
 cat /dev/null > /var/log/audit/audit.log

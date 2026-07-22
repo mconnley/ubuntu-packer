@@ -17,8 +17,4 @@ curl -X 'POST' "$posturl" \
  -H 'Content-Type: application/json' -d "{ $body_json_string }"
 cmk-agent-ctl register --hostname $host --server $checkmkfqdn --site $checkmksite --user $checkmkusername --password $checkmkpassword --trust-cert
 
-rm /etc/salt/minion_id
-hostname > /etc/salt/minion_id
-systemctl enable salt-minion
-systemctl start salt-minion
 rm /usr/local/bin/postbuild_job.sh

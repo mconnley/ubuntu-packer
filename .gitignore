@@ -10,3 +10,6 @@ crash.log
 *.box
 
 sensitive*
+
+# Auto-generated dev container lockfile
+.devcontainer/devcontainer-lock.json
