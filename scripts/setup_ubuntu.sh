@@ -117,8 +117,12 @@ systemctl mask fwupd-refresh
 systemctl reset-failed
 
 log "Clearing the hostname ..."
+# Clear the static hostname so cloud-init assigns one per clone on first boot.
+# Use --transient for the running hostname: a bare `hostnamectl set-hostname`
+# also sets the STATIC name, which rewrites /etc/hostname — so the file must be
+# truncated last, after the transient set, to end up empty.
+hostnamectl set-hostname --transient localhost
 : > /etc/hostname
-hostnamectl set-hostname localhost
 
 log "Disabling swap ..."
 # Swap is provisioned per-workload after deployment, not baked into the image.
