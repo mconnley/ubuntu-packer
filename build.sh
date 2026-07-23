@@ -2,9 +2,15 @@
 ##################################################################################
 # Build one Proxmox template per Ubuntu release.
 #
-#   ./build.sh              build every release in RELEASES
-#   ./build.sh noble        build just one
+#   ./build.sh                     build every release in RELEASES
+#   ./build.sh noble               build just one
 #   ./build.sh noble resolute
+#   ./build.sh resolute -- -var 'debug_authorized_key=...'   pass args to packer
+#
+# Anything after `--` is forwarded verbatim to `packer build` for every release
+# named — used for debug runs (see the README's "Debugging a failed build").
+# PACKER_ON_ERROR is read by packer itself, so `PACKER_ON_ERROR=ask ./build.sh
+# resolute` needs nothing special here.
 #
 # Runs unattended nightly on ubuntu1. Design constraints that follow from that:
 #
@@ -22,11 +28,25 @@ set -uo pipefail
 # relative var-file paths below resolve.
 cd "$(dirname "$0")"
 
-RELEASES=(noble resolute)
+# Split arguments at `--`: releases before it, pass-through packer args after.
+RELEASES=()
+PACKER_ARGS=()
+seen_sep=0
+for arg in "$@"; do
+  if [ "$seen_sep" -eq 0 ] && [ "$arg" = "--" ]; then
+    seen_sep=1
+    continue
+  fi
+  if [ "$seen_sep" -eq 0 ]; then
+    RELEASES+=("$arg")
+  else
+    PACKER_ARGS+=("$arg")
+  fi
+done
 
-# Explicit releases may be passed as arguments.
-if [ "$#" -gt 0 ]; then
-  RELEASES=("$@")
+# Default to all releases when none were named.
+if [ "${#RELEASES[@]}" -eq 0 ]; then
+  RELEASES=(noble resolute)
 fi
 
 if [ ! -f sensitive.pkrvars.hcl ]; then
@@ -50,11 +70,14 @@ for release in "${RELEASES[@]}"; do
   echo "=============================================================================="
 
   # -force replaces the existing template at the release's pinned VMID rather
-  # than leaking a new VM every night.
+  # than leaking a new VM every night. PACKER_ARGS is any pass-through given
+  # after `--`; the "${PACKER_ARGS[@]+...}" form is safe under `set -u` when it
+  # is empty.
   if packer build \
     -var-file=common.pkrvars.hcl \
     -var-file="$varfile" \
     -var-file=sensitive.pkrvars.hcl \
+    ${PACKER_ARGS[@]+"${PACKER_ARGS[@]}"} \
     -force \
     . ; then
     echo "--- ${release}: OK"

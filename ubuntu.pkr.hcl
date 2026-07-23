@@ -40,15 +40,16 @@ locals {
   # HTTP server (see http_content below), never written to disk. That is what
   # keeps credentials out of the tracked tree.
   user_data = templatefile("${path.root}/http/user-data.pkrtpl.hcl", {
-    packer_username     = var.ssh_username
-    packer_password     = local.packer_password
-    matt_ssh_key        = var.matt_ssh_key
-    ansible_ssh_key     = var.ansible_ssh_key
-    locale              = var.locale
-    keyboard_layout     = var.keyboard_layout
-    apt_fallback_mirror = var.apt_fallback_mirror
-    packages            = var.autoinstall_packages
-    nfs_mounts          = var.nfs_mounts
+    packer_username      = var.ssh_username
+    packer_password      = local.packer_password
+    debug_authorized_key = var.debug_authorized_key
+    matt_ssh_key         = var.matt_ssh_key
+    ansible_ssh_key      = var.ansible_ssh_key
+    locale               = var.locale
+    keyboard_layout      = var.keyboard_layout
+    apt_fallback_mirror  = var.apt_fallback_mirror
+    packages             = var.autoinstall_packages
+    nfs_mounts           = var.nfs_mounts
   })
 }
 

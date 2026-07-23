@@ -117,6 +117,45 @@ VM down cleanly.
 > have supported it anyway. Both are fixed, but any hash visible in git history before
 > that date should be treated as public forever.
 
+## Debugging a failed build
+
+Because the build user's password is a per-run `uuidv4` that is never stored, a failed
+build cannot normally be logged into. How you diagnose one depends on **which phase**
+failed — and the two phases need different tools.
+
+**Provisioning phase** (after first boot, while `setup_ubuntu.sh` runs). The installed
+system and the `packer` user exist, so SSH works — once you authorize a key and stop
+Packer from tearing the VM down:
+
+```sh
+PACKER_ON_ERROR=ask ./build.sh resolute -- \
+  -var "debug_authorized_key=$(cat ~/.ssh/id_ed25519.pub)"
+```
+
+Everything after `--` is forwarded to `packer build`; `PACKER_ON_ERROR` is read by
+Packer directly.
+
+On failure, `PACKER_ON_ERROR=ask` leaves the VM running (choose to keep it at the
+prompt). `debug_authorized_key` authorizes your key on the **build user only**, so:
+
+```sh
+ssh -o IdentitiesOnly=yes -i ~/.ssh/id_ed25519 packer@192.168.2.233
+```
+
+`debug_authorized_key` is empty in every normal build, so nothing is baked in; and even
+when set, the key dies with the build user at seal time, so it never reaches a clone. Do
+**not** commit it to `common.pkrvars.hcl` — pass it with `-var` for the debug run only.
+
+**Installer phase** (subiquity, before first boot — e.g. an out-of-space during install).
+There is **no installed system to SSH into**, and the installer's own sshd is stopped by
+`early-commands`, so `debug_authorized_key` cannot help here. Instead:
+
+- Run with `PACKER_ON_ERROR=ask` so the VM is not destroyed.
+- Open the VM's **console in Proxmox**. A failed subiquity run offers a shell; from it,
+  `df -h` shows a full `/target`, and `/var/log/installer/` (`subiquity-server-debug.log`,
+  `curtin-install.log`) has the detail.
+- The usual culprit is a too-small `vm_disk_size` — see the note on that variable.
+
 ## Ubuntu 26.04 notes
 
 Two changes in Resolute affect this build; both are handled in shared code:

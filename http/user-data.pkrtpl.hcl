@@ -105,12 +105,23 @@ autoinstall:
     disable_root: true
     users:
       # Build user. Ephemeral in every sense: the password is regenerated per
-      # build and the account is deleted by vm_shutdown_command before the
-      # template is sealed. Nothing about it persists into a clone.
+      # build, and the account is deleted in the SEAL section of setup_ubuntu.sh
+      # before the template is sealed. Nothing about it persists into a clone.
+      #
+      # debug_authorized_key, when set, authorizes an operator key on THIS
+      # account only, so a build that fails during provisioning can be logged
+      # into for diagnosis (the per-run password is otherwise unrecoverable).
+      # Empty in normal builds, so nothing is baked in; and even when set it dies
+      # with the account at seal time. See the "Debugging a failed build" section
+      # of the README.
       - name: ${packer_username}
         plain_text_passwd: "${packer_password}"
         lock_passwd: false
         sudo: ALL=(ALL) NOPASSWD:ALL
+%{ if debug_authorized_key != "" ~}
+        ssh_authorized_keys:
+          - ${debug_authorized_key}
+%{ endif ~}
 
       # Key-only, like the ansible user. No password is set here at all: the
       # console password is Ansible's to manage from OpenBao (configure_users),

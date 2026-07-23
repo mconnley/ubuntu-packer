@@ -229,6 +229,21 @@ variable "ssh_timeout" {
   default     = "90m"
 }
 
+variable "debug_authorized_key" {
+  type        = string
+  description = <<-EOT
+    Operator public SSH key, authorized on the build user for diagnosis only.
+
+    Empty in every normal build. When set (via -var or a local var file, NOT
+    committed), and paired with `PACKER_ON_ERROR=ask`, a build that fails during
+    the provisioning phase stays up and is reachable as the build user — which
+    is otherwise impossible, since its password is a per-run uuid that is never
+    stored. Only helps AFTER first boot: an installer-phase failure has no
+    installed system to reach. See the README.
+  EOT
+  default     = ""
+}
+
 ##################################################################################
 # Autoinstall — identity
 #

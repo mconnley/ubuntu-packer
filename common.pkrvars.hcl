@@ -9,10 +9,16 @@
 # VM hardware — sizes the BUILD vm only; clones are resized at deploy time.
 ##################################################################################
 
-vm_cpu_sockets     = 2
-vm_cpu_cores       = 1
-vm_mem_size        = 2048
-vm_disk_size       = "4G"
+vm_cpu_sockets = 2
+vm_cpu_cores   = 1
+vm_mem_size    = 2048
+
+# 8G, up from 4G. A 26.04 install with `updates: all` overflowed 4G during
+# subiquity — the base system plus the full -security/-updates set, downloaded
+# and unpacked before `apt clean`, spikes past 4G before it settles. The disk is
+# thin-provisioned (vm_disk_discard, thin pool), so the larger logical size costs
+# no real space until written, and clones resize at deploy time regardless.
+vm_disk_size       = "8G"
 vm_scsi_controller = "virtio-scsi-single"
 vm_disk_type       = "virtio"
 vm_disk_iothread   = true
