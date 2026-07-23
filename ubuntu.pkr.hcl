@@ -60,11 +60,14 @@ locals {
 source "proxmox-iso" "ubuntu" {
 
   # --- Installer media -----------------------------------------------------
+  # The ISO is pre-staged in the pool under a stable name by build.sh's
+  # ensure_iso (server-side download, sha256-verified there), so we reference it
+  # by iso_file and nothing re-downloads a 2.7 GB ISO per build. Integrity is
+  # already guaranteed at download time, hence iso_checksum = "none".
   boot_iso {
-    iso_url          = var.iso_url
-    iso_checksum     = var.iso_checksum
-    iso_storage_pool = var.iso_storage_pool
-    unmount          = true
+    iso_file     = "${var.iso_storage_pool}:iso/${var.iso_filename}"
+    iso_checksum = "none"
+    unmount      = true
   }
 
   # --- Autoinstall seed ----------------------------------------------------
@@ -86,10 +89,13 @@ source "proxmox-iso" "ubuntu" {
   task_timeout = var.proxmox_task_timeout
 
   # --- VM and template identity --------------------------------------------
-  vm_id                   = var.vm_id
-  vm_name                 = var.vm_name
-  template_name           = var.vm_name
-  template_description    = "Ubuntu ${var.release_version} (${var.release_codename}) — built ${local.buildtime} by ubuntu-packer"
+  # Builds into the DISPOSABLE build_vm_id under a "-build" name. build.sh
+  # promotes this onto the production template_vm_id / template_name only after
+  # a successful build, so a failure never touches the working template.
+  vm_id                   = var.build_vm_id
+  vm_name                 = "${var.template_name}-build"
+  template_name           = "${var.template_name}-build"
+  template_description    = "Ubuntu ${var.release_version} (${var.release_codename}) — built ${local.buildtime} by ubuntu-packer (promote to ${var.template_name}/${var.template_vm_id})"
   os                      = var.vm_os
   cloud_init              = true
   cloud_init_storage_pool = var.vm_storage_pool

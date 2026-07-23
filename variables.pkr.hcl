@@ -79,34 +79,57 @@ variable "iso_url" {
   description = <<-EOT
     Full URL of the live-server ISO.
 
-    The filename carries the LTS point release (24.04.4, 26.04.1, ...), and
+    Consumed by build.sh's ensure_iso, NOT by this template — the ISO is
+    pre-staged in the pool server-side and Packer boots it via iso_file. The
+    filename carries the LTS point release (24.04.4, 26.04.1, ...), and
     releases.ubuntu.com removes superseded point releases, so this needs a bump
-    roughly twice a year. When it goes stale the build fails loudly on a 404 —
-    which is the intent. Do not try to make it float.
+    roughly twice a year. When it does, iso_filename changes too, the pool cache
+    misses, and the new ISO is pulled automatically.
   EOT
 }
 
 variable "iso_checksum" {
   type        = string
   description = <<-EOT
-    ISO checksum. Prefer the `file:` form pointing at the release's SHA256SUMS —
-    Packer fetches it and matches on the ISO filename, so the checksum never
-    needs hand-maintaining:
+    `file:` URL of the release's SHA256SUMS. Consumed by build.sh's ensure_iso,
+    which looks up the sha256 for iso_filename and hands it to Proxmox's
+    server-side download so integrity is verified at download time:
 
       file:https://releases.ubuntu.com/24.04/SHA256SUMS
   EOT
 }
 
-variable "vm_name" {
+variable "iso_filename" {
   type        = string
-  description = "Name of both the build VM and the resulting Proxmox template."
+  description = <<-EOT
+    Stable basename the ISO is stored under in the pool, e.g.
+    ubuntu-26.04-live-server-amd64.iso. Packer boots it via
+    iso_file = "<iso_storage_pool>:iso/<iso_filename>". Keep it equal to the ISO
+    URL's basename: that is what makes the pool cache hit on an unchanged release
+    and miss (re-download) on a point-release bump.
+  EOT
 }
 
-variable "vm_id" {
+variable "template_name" {
+  type        = string
+  description = "Name of the PRODUCTION template that clones use, e.g. ubuntu-noble-template. The build VM/template is named <template_name>-build until promoted onto it."
+}
+
+variable "build_vm_id" {
   type        = number
   description = <<-EOT
-    Proxmox VMID for the template. Pinned per release so `packer build -force`
-    replaces the same template every night instead of leaking new VMIDs.
+    DISPOSABLE vmid Packer builds into, always with -force. Kept clear of any
+    production vmid so a failed build never harms a working template; on success
+    it is promoted onto template_vm_id and then left in place as a fallback.
+  EOT
+}
+
+variable "template_vm_id" {
+  type        = number
+  description = <<-EOT
+    PRODUCTION vmid that clones use. Never built into directly — build.sh's
+    promote step publishes a verified build_vm_id onto it after a successful
+    build. This is the number a failed build must never be able to empty.
   EOT
 }
 

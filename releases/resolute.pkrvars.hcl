@@ -21,12 +21,13 @@
 release_codename = "resolute"
 release_version  = "26.04"
 
-# 26.04.1 is due 2026-08-04 and will rename this file to ubuntu-26.04.1-...,
-# retiring the current one. Expect a 404 and a one-line bump around then.
-iso_url = "https://releases.ubuntu.com/26.04/ubuntu-26.04-live-server-amd64.iso"
-
+# 26.04.1 is due 2026-08-04 and will rename these to ubuntu-26.04.1-..., retiring
+# the current files. Expect a one-line bump of iso_url + iso_filename around then;
+# ensure_iso pulls the new ISO automatically once iso_filename changes.
+iso_url      = "https://releases.ubuntu.com/26.04/ubuntu-26.04-live-server-amd64.iso"
 iso_checksum = "file:https://releases.ubuntu.com/26.04/SHA256SUMS"
+iso_filename = "ubuntu-26.04-live-server-amd64.iso"
 
-vm_name = "ubuntu-resolute-template"
-
-vm_id = 500
+template_name  = "ubuntu-resolute-template"
+template_vm_id = 500  # production template clones use
+build_vm_id    = 9500 # disposable; promoted onto template_vm_id on success

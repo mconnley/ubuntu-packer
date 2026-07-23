@@ -340,11 +340,31 @@ where a mismatch fails the build 20 minutes in with an SSH timeout.
 
 Only `matt` now needs a stored hash.
 
+## Follow-ups since the first cut (2026-07-23)
+
+- **Both templates built green** (noble + resolute), after fixing a 4G→8G disk overflow
+  and a hostname-generalization bug the verify block caught.
+- **Build-failure diagnosis** — added `debug_authorized_key` (opt-in operator key on the
+  build user) + `PACKER_ON_ERROR=ask`, so a provisioning-phase failure is SSH-able.
+- **Scheduled** via matt's crontab on `ubuntu1`, each release `cronitor exec`-wrapped and
+  2h apart (fixed build IP must not collide). F13/F14 effectively resolved.
+- **ISO re-download eliminated** — `ensure_iso` (`scripts/pve-api.sh`) pre-stages each ISO
+  in the pool under its stable basename via Proxmox server-side `download-url`; Packer
+  boots it with `iso_file`. Fetched once, reused nightly; a point-release bump changes
+  `iso_filename` and re-pulls automatically.
+- **A failed build can no longer destroy the working template** — Packer builds into a
+  disposable `build_vm_id`; `promote` publishes it onto the production `template_vm_id`
+  only on success, fail-safe (guarded, build template kept as fallback). Replaces the old
+  `-force`-on-fixed-VMID behaviour. Assumes VMID-based cloning; a name-based blue/green
+  variant is a small change if needed. The destructive path was validated only by
+  offline dry-run (stubbed API) — **needs a supervised first real run**, and the build
+  token may need `Datastore.Allocate*` + `VM.Clone` permissions.
+
 ## Not done
 
-- **F14 (Cronitor alerting) and F13 (the schedule itself)** — both are host config on
-  `ubuntu1` and belong in `ansible-homelab` under ADR-0005, not here. `build.sh` exits
-  non-zero on any release failure, which is the hook they need.
+- **Credential rotation.** The `matt` hash and the Checkmk automation secret should be
+  rotated, since the old `matt` hash is in this public repo's history. That is an
+  operator action.
 - **Credential rotation.** The `matt` hash and the Checkmk automation secret should be
   rotated, since the old `matt` hash is in this public repo's history. That is an
   operator action.

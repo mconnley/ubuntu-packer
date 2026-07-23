@@ -40,6 +40,10 @@ Builds run sequentially by design: the autoinstall uses a fixed build-time IP
 (`192.168.2.233`), so concurrent builds would collide on it. `build.sh` exits non-zero if
 any release fails, and still attempts the rest.
 
+Each release runs three steps (see [How a build is published](#how-a-build-is-published)):
+`ensure_iso` pre-stages the installer ISO in the pool, `packer build` builds into a
+disposable VMID, and `promote` publishes that onto the production VMID **only on success**.
+
 ### Prerequisites
 
 1. **`sensitive.pkrvars.hcl`** — copy the example and fill it in. It is gitignored.
@@ -55,14 +59,16 @@ any release fails, and still attempts the rest.
 ## Layout
 
 ```
+build.sh                         orchestrates ensure_iso -> packer build -> promote
 ubuntu.pkr.hcl                   one source + one build, parameterized by release
 variables.pkr.hcl                variable declarations and documentation
 common.pkrvars.hcl               settings shared by every release
 releases/
-  noble.pkrvars.hcl              per-release: ISO, checksum, template name, VMID
+  noble.pkrvars.hcl              per-release: ISO, filename, template name, build/prod VMIDs
   resolute.pkrvars.hcl
 http/user-data.pkrtpl.hcl        the autoinstall, shared by every release
-scripts/setup_ubuntu.sh          provision, harden, generalize, verify
+scripts/setup_ubuntu.sh          provision, harden, generalize, verify (runs in the guest)
+scripts/pve-api.sh               Proxmox API helpers: ensure_iso + promote (run on ubuntu1)
 files/                           configuration copied into the image
 sensitive.pkrvars.hcl.example    the credential contract
 docs/modernization-plan.md       rationale for the current structure
@@ -70,13 +76,59 @@ docs/modernization-plan.md       rationale for the current structure
 
 ### Adding a release
 
-Drop a new file in `releases/` and add its codename to `RELEASES` in `build.sh` and to
-the CI matrix. Nothing else should need to change — that is the point of the structure.
+Drop a new file in `releases/` (copy an existing one; set `iso_url`, `iso_filename`,
+`template_name`, and a unique `build_vm_id`/`template_vm_id` pair), add its codename to the
+default `RELEASES` in `build.sh`, and to the CI matrix. Nothing else should need to change.
 
 There is deliberately **one** source block rather than one per release. Packer's
 build-block source overrides can only set top-level attributes, and the ISO lives in the
 nested `boot_iso` block, so a per-release ISO cannot be expressed that way. Parameterizing
 a single source keeps duplication at zero.
+
+## How a build is published
+
+`build.sh` never builds directly onto the template that clones use. Per release it holds
+two VMIDs:
+
+- **`build_vm_id`** (e.g. `9500`) — disposable. Packer builds here with `-force`.
+- **`template_vm_id`** (e.g. `500`) — the production template clones use.
+
+On a **successful** build, `promote` (in `scripts/pve-api.sh`) publishes the build onto
+production: it deletes the old `template_vm_id`, full-clones `build_vm_id` onto it, and
+marks it a template. On a **failed** build, promote never runs, so the working template is
+untouched. This is why a failed nightly can no longer leave you without a template — the
+old failure mode where `-force` on a fixed VMID destroyed the template up front is gone.
+
+**Fail-safety:** promote refuses to touch production unless the freshly built template is
+confirmed present, and it leaves `build_vm_id` in place afterwards as a fallback. The only
+residual window is the seconds-to-minutes of the full clone (production briefly empty),
+and it happens only *after* a verified-good build. If the clone step itself fails, the
+build template still exists and promote prints the one-line `qm clone` recovery command.
+
+> This assumes clones reference the template by **VMID**. If you clone by **name**, a
+> zero-window blue/green variant (build to an alternate VMID, then rename-swap) is
+> possible — say so and it's a small change.
+
+**ISO caching.** `ensure_iso` stores each installer ISO in the pool under its stable
+basename (`iso_filename`) via Proxmox's server-side `download-url`, and Packer boots it
+with `iso_file`. So the 2.7 GB ISO is fetched **once** and reused every night; a
+point-release bump changes `iso_filename`, misses the cache, and pulls the new one
+automatically. (Previously Packer re-downloaded and re-uploaded it every run.)
+
+### Dry-run the Proxmox side first
+
+`ensure_iso` and `promote` make real Proxmox API calls, and they need a token with more
+than build permissions — at least `Datastore.Allocate*` (ISO download) and
+`VM.Clone`/`VM.Allocate` (clone + delete). Before trusting the nightly cron, dry-run once:
+
+```sh
+PVE_DRY_RUN=1 ./build.sh resolute
+```
+
+This prints every mutating API call instead of making it (and skips the packer build), so
+you can confirm the VMIDs and the plan. If your build token lacks the permissions, a real
+run fails at `ensure_iso` or `promote` — and because promote is fail-safe, the production
+template is left intact.
 
 ## Credentials
 
@@ -187,11 +239,10 @@ was set but referenced by nothing, which silently left the build user in every c
   post-boot work that belongs in `ansible-homelab` (which already has a `checkmk_agent`
   role, currently used only for `dns_servers` and `flow_probes`). Left functionally
   as-is pending that decision rather than silently changed.
-- **The nightly schedule is in no repo.** No `/etc/cron.d` entry or systemd timer on
-  `ubuntu1` runs this. Under ADR-0005 the schedule is host config and belongs in
-  `ansible-homelab` as a systemd timer.
-- **No build alerting.** Wrap `build.sh` in Cronitor, matching the pattern already used
-  by the vmnas 3-2-1 pushes.
+- **The nightly schedule lives in the crontab, not this repo.** It runs from matt's
+  crontab on `ubuntu1` (`cronitor exec <key> ./build.sh <release>`, releases 2h apart so
+  the fixed build IP never collides). Under ADR-0005 the schedule is host config and would
+  ideally move to an `ansible-homelab`-managed systemd timer.
 - **Consider key-based auth for the build user**, removing password auth from the
   installer entirely.
 - **Stale branches.** This repo now works trunk-based on `main`. `develop` is 25 commits

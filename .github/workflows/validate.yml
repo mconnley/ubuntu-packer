@@ -72,4 +72,5 @@ jobs:
       - name: shellcheck
         # -S error to start with, so CI reports genuine breakage rather than
         # style opinions. Tighten to warning once the existing output is clean.
-        run: shellcheck -S error build.sh scripts/setup_ubuntu.sh files/postbuild_job.sh
+        # -x so shellcheck follows the `. scripts/pve-api.sh` source in build.sh.
+        run: shellcheck -x -S error build.sh scripts/pve-api.sh scripts/setup_ubuntu.sh files/postbuild_job.sh
