@@ -14,6 +14,10 @@ iso_url      = "https://releases.ubuntu.com/24.04/ubuntu-24.04.4-live-server-amd
 iso_checksum = "file:https://releases.ubuntu.com/24.04/SHA256SUMS"
 iso_filename = "ubuntu-24.04.4-live-server-amd64.iso"
 
-template_name  = "ubuntu-noble-template"
-template_vm_id = 100  # production template clones use
-build_vm_id    = 9100 # disposable; promoted onto template_vm_id on success
+template_name = "ubuntu-noble-template"
+
+# Two disposable build slots; each nightly build uses whichever does NOT hold the
+# live template, then renames it into place (blue/green). Clones select by name,
+# so which slot is "current" simply alternates.
+build_vm_id_a = 9100
+build_vm_id_b = 9101

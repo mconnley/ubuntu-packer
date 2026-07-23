@@ -53,6 +53,7 @@ jobs:
           packer validate \
             -var-file=common.pkrvars.hcl \
             -var-file=releases/${{ matrix.release }}.pkrvars.hcl \
+            -var 'build_vm_id=9999' \
             -var 'proxmox_url=https://ci.invalid:8006/api2/json' \
             -var 'proxmox_username=ci@pam!ci' \
             -var 'proxmox_token=00000000-0000-0000-0000-000000000000' \

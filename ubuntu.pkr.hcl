@@ -89,13 +89,14 @@ source "proxmox-iso" "ubuntu" {
   task_timeout = var.proxmox_task_timeout
 
   # --- VM and template identity --------------------------------------------
-  # Builds into the DISPOSABLE build_vm_id under a "-build" name. build.sh
-  # promotes this onto the production template_vm_id / template_name only after
-  # a successful build, so a failure never touches the working template.
+  # Builds into the DISPOSABLE build_vm_id (the free slot this run) under a
+  # "-building" name, so the live "<template_name>" is untouched during the
+  # build. On success build.sh renames this to <template_name>; a failure never
+  # touches the working template. See "How a build is published" in the README.
   vm_id                   = var.build_vm_id
-  vm_name                 = "${var.template_name}-build"
-  template_name           = "${var.template_name}-build"
-  template_description    = "Ubuntu ${var.release_version} (${var.release_codename}) — built ${local.buildtime} by ubuntu-packer (promote to ${var.template_name}/${var.template_vm_id})"
+  vm_name                 = "${var.template_name}-building"
+  template_name           = "${var.template_name}-building"
+  template_description    = "Ubuntu ${var.release_version} (${var.release_codename}) — built ${local.buildtime} by ubuntu-packer (publishes as ${var.template_name})"
   os                      = var.vm_os
   cloud_init              = true
   cloud_init_storage_pool = var.vm_storage_pool

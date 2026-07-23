@@ -352,13 +352,15 @@ Only `matt` now needs a stored hash.
   in the pool under its stable basename via Proxmox server-side `download-url`; Packer
   boots it with `iso_file`. Fetched once, reused nightly; a point-release bump changes
   `iso_filename` and re-pulls automatically.
-- **A failed build can no longer destroy the working template** — Packer builds into a
-  disposable `build_vm_id`; `promote` publishes it onto the production `template_vm_id`
-  only on success, fail-safe (guarded, build template kept as fallback). Replaces the old
-  `-force`-on-fixed-VMID behaviour. Assumes VMID-based cloning; a name-based blue/green
-  variant is a small change if needed. The destructive path was validated only by
-  offline dry-run (stubbed API) — **needs a supervised first real run**, and the build
-  token may need `Datastore.Allocate*` + `VM.Clone` permissions.
+- **A failed build can no longer destroy the working template** — clones select the
+  template by **name**, so publishing is a blue/green **rename**, not a clone. Packer
+  builds into whichever of the release's two disposable slots (`build_vm_id_a/_b`) does not
+  hold the live template; on success `promote_by_name` renames the old out to `-old`,
+  renames the new into place, and deletes the old. A failed build never runs it. Safer than
+  a clone (no disk movement, no `VM.Clone`, sub-second window, nothing valid deleted before
+  the new template is live). Validated by offline dry-run (stubbed API) across the
+  migration / steady-state / first-run cases — the live API path still **needs a supervised
+  first real run**; token needs `Datastore.Allocate*` + `VM.Config.Options` + `VM.Allocate`.
 
 ## Not done
 

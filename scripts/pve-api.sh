@@ -9,9 +9,9 @@
 #                Packer references it with iso_file and nothing re-downloads a
 #                2.7 GB ISO every night (issue 2).
 #
-#   promote      after a successful build to a DISPOSABLE vmid, publish it onto
-#                the production vmid clones use — so a failed build never
-#                destroys the working template (issue 1).
+#   promote_by_name  after a successful build to a DISPOSABLE vmid, publish it by
+#                RENAMING it to the canonical template name clones select by — so
+#                a failed build never touches the working template (issue 1).
 #
 # Auth + connection come from the environment (build.sh extracts them from
 # sensitive.pkrvars.hcl):
@@ -155,62 +155,75 @@ ensure_iso() {
 }
 
 # --- issue 1: publish a built template onto the production vmid ----------------
-# promote BUILD_VMID PROD_VMID PROD_NAME STORAGE
+# _pve_templates_named NAME  ->  prints the vmid of each template named NAME
+_pve_templates_named() {
+  local name="$1" data
+  data=$(_pve_get_data "/nodes/${PVE_NODE}/qemu") || return 1
+  echo "$data" | python3 -c '
+import json, sys
+want = sys.argv[1]
+for vm in json.load(sys.stdin):
+    if vm.get("name") == want and str(vm.get("template", 0)) == "1":
+        print(vm["vmid"])
+' "$name"
+}
+
+# _pve_rename VMID NEWNAME  — set a VM/template name (config change is synchronous;
+# it returns null, not a UPID, so there is normally nothing to wait on).
+_pve_rename() {
+  local vmid="$1" newname="$2" upid
+  upid=$(_pve_mutate POST "/nodes/${PVE_NODE}/qemu/${vmid}/config" --data-urlencode "name=${newname}") || return 1
+  [ -n "$upid" ] && _pve_wait_task "$upid" || true
+}
+
+# _pve_delete_vm VMID
+_pve_delete_vm() {
+  local vmid="$1" upid
+  upid=$(_pve_mutate DELETE "/nodes/${PVE_NODE}/qemu/${vmid}?purge=1&destroy-unreferenced-disks=1") || return 1
+  _pve_wait_task "$upid"
+}
+
+# promote_by_name TEMPLATE_NAME BUILD_VMID
 #
-# Ordering is chosen so production is never lost to a build problem:
-#   1. GUARD: abort untouched unless BUILD_VMID is a real template with a disk.
-#   2. delete PROD_VMID if present.
-#   3. full-clone BUILD_VMID -> PROD_VMID, then mark it a template.
-# BUILD_VMID is deliberately left in place afterwards as a fallback, so even if
-# step 3 fails after step 2, a valid (wrongly-numbered) template still exists and
-# the recovery is a one-line manual clone.
-promote() {
-  local build_vmid="$1" prod_vmid="$2" prod_name="$3" storage="$4"
+# Clones select the template by NAME, so publishing is a rename, not a clone:
+#   1. GUARD: BUILD_VMID must be a template with a disk (else abort untouched).
+#   2. retire every current "<name>" (there should be one) to "<name>-old".
+#   3. rename BUILD_VMID to "<name>".
+#   4. delete the retired old templates.
+#
+# Nothing valid is ever removed before the new template holds the name. The only
+# window is the sub-second between steps 2 and 3 (briefly no "<name>"), and the
+# only deletion is the now-redundant old, after the new one is live. If a later
+# step fails, the worst state is a harmless duplicate the next run cleans up.
+promote_by_name() {
+  local name="$1" build_vmid="$2" olds o
 
-  echo "  Promoting ${build_vmid} -> ${prod_vmid} (${prod_name}) ..."
+  echo "  Publishing build ${build_vmid} as ${name} ..."
 
-  # 1. GUARD — the one check that must hold before anything destructive.
+  # 1. GUARD
   if [ "${PVE_DRY_RUN:-0}" != "1" ] && ! _pve_is_template "$build_vmid"; then
-    echo "  ERROR: build template ${build_vmid} is missing or not a template — refusing to touch ${prod_vmid}." >&2
+    echo "  ERROR: ${build_vmid} is not a template with a disk — refusing to publish ${name}." >&2
     return 1
   fi
 
-  # 2. Remove the current production template, if any.
-  if _pve_vm_exists "$prod_vmid"; then
-    echo "  Deleting existing production template ${prod_vmid} ..."
-    local del_upid
-    del_upid=$(_pve_mutate DELETE "/nodes/${PVE_NODE}/qemu/${prod_vmid}?purge=1&destroy-unreferenced-disks=1") \
-      && _pve_wait_task "$del_upid" || {
-        echo "  ERROR: could not delete ${prod_vmid}; it is left in place, ${build_vmid} is the new build." >&2
-        return 1
-      }
-  else
-    echo "  No existing production template ${prod_vmid} (first publish)."
-  fi
+  # Current canonical(s), excluding the one we are about to publish.
+  olds=$(_pve_templates_named "$name" 2>/dev/null | grep -vx "$build_vmid" || true)
 
-  # 3. Full-clone the build template onto the production vmid, then mark template.
-  echo "  Cloning ${build_vmid} -> ${prod_vmid} (full) ..."
-  local clone_upid
-  clone_upid=$(_pve_mutate POST "/nodes/${PVE_NODE}/qemu/${build_vmid}/clone" \
-    --data-urlencode "newid=${prod_vmid}" \
-    --data-urlencode "name=${prod_name}" \
-    --data-urlencode "full=1" \
-    --data-urlencode "storage=${storage}") || {
-      echo "  ERROR: clone call failed. ${prod_vmid} is empty; recover with:" >&2
-      echo "         qm clone ${build_vmid} ${prod_vmid} --name ${prod_name} --full 1" >&2
-      return 1
-    }
-  _pve_wait_task "$clone_upid" || {
-    echo "  ERROR: clone task failed. Recover with: qm clone ${build_vmid} ${prod_vmid} --name ${prod_name} --full 1" >&2
-    return 1
-  }
+  # 2. retire
+  for o in $olds; do
+    echo "  Retiring current ${name} at ${o} -> ${name}-old ..."
+    _pve_rename "$o" "${name}-old" || { echo "  ERROR: could not rename ${o}; ${name} left in place." >&2; return 1; }
+  done
 
-  echo "  Marking ${prod_vmid} as a template ..."
-  local tmpl_upid
-  tmpl_upid=$(_pve_mutate POST "/nodes/${PVE_NODE}/qemu/${prod_vmid}/template") || true
-  # A full clone of a template may already be a template on some PVE versions; a
-  # failure here is non-fatal as long as the clone itself succeeded.
-  [ -n "${tmpl_upid:-}" ] && _pve_wait_task "$tmpl_upid" || true
+  # 3. publish
+  echo "  Renaming ${build_vmid} -> ${name} ..."
+  _pve_rename "$build_vmid" "$name" || { echo "  ERROR: could not rename ${build_vmid} to ${name}." >&2; return 1; }
 
-  echo "  Published ${prod_name} at vmid ${prod_vmid}. Build template ${build_vmid} kept as fallback."
+  # 4. delete the retired old templates (redundant now the new one is live)
+  for o in $olds; do
+    echo "  Deleting retired template ${o} ..."
+    _pve_delete_vm "$o" || echo "  WARNING: could not delete retired ${o}; remove it manually." >&2
+  done
+
+  echo "  Published ${name} at vmid ${build_vmid}."
 }

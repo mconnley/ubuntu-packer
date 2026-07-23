@@ -28,6 +28,9 @@ iso_url      = "https://releases.ubuntu.com/26.04/ubuntu-26.04-live-server-amd64
 iso_checksum = "file:https://releases.ubuntu.com/26.04/SHA256SUMS"
 iso_filename = "ubuntu-26.04-live-server-amd64.iso"
 
-template_name  = "ubuntu-resolute-template"
-template_vm_id = 500  # production template clones use
-build_vm_id    = 9500 # disposable; promoted onto template_vm_id on success
+template_name = "ubuntu-resolute-template"
+
+# Two disposable build slots; each nightly build uses whichever does NOT hold the
+# live template, then renames it into place (blue/green). Clones select by name.
+build_vm_id_a = 9500
+build_vm_id_b = 9501

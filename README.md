@@ -87,27 +87,30 @@ a single source keeps duplication at zero.
 
 ## How a build is published
 
-`build.sh` never builds directly onto the template that clones use. Per release it holds
-two VMIDs:
+Clones select the template **by name** (`ubuntu-noble-template`), so `build.sh` never
+builds directly onto the live template — publishing is a **rename**, not a clone.
 
-- **`build_vm_id`** (e.g. `9500`) — disposable. Packer builds here with `-force`.
-- **`template_vm_id`** (e.g. `500`) — the production template clones use.
+Each release has **two disposable build slots** (`build_vm_id_a`/`build_vm_id_b`, e.g.
+`9500`/`9501`). Per run, `build.sh` builds into whichever slot does **not** currently hold
+the live template — so the build (with `-force`) can never land on it — under the
+temporary name `<template_name>-building`. The live template keeps its name throughout.
 
-On a **successful** build, `promote` (in `scripts/pve-api.sh`) publishes the build onto
-production: it deletes the old `template_vm_id`, full-clones `build_vm_id` onto it, and
-marks it a template. On a **failed** build, promote never runs, so the working template is
-untouched. This is why a failed nightly can no longer leave you without a template — the
-old failure mode where `-force` on a fixed VMID destroyed the template up front is gone.
+On a **successful** build, `promote_by_name` (in `scripts/pve-api.sh`) publishes by rename
+(blue/green):
 
-**Fail-safety:** promote refuses to touch production unless the freshly built template is
-confirmed present, and it leaves `build_vm_id` in place afterwards as a fallback. The only
-residual window is the seconds-to-minutes of the full clone (production briefly empty),
-and it happens only *after* a verified-good build. If the clone step itself fails, the
-build template still exists and promote prints the one-line `qm clone` recovery command.
+1. rename the current `<template_name>` to `<template_name>-old`,
+2. rename the fresh build to `<template_name>`,
+3. delete the retired `-old`.
 
-> This assumes clones reference the template by **VMID**. If you clone by **name**, a
-> zero-window blue/green variant (build to an alternate VMID, then rename-swap) is
-> possible — say so and it's a small change.
+On a **failed** build, promote never runs, so the live template is untouched — the old
+failure mode where `-force` on a fixed VMID destroyed the template up front is gone. The
+two slots simply alternate across nightly builds.
+
+**Fail-safety:** nothing valid is removed before the new template holds the name. The only
+window is the sub-second between renames 1 and 2 (briefly no `<template_name>`); the only
+deletion is the redundant old, *after* the new one is live. A mid-way failure leaves at
+worst a harmless duplicate that the next run cleans up. Compared with a clone, this moves
+no disk data, needs no `VM.Clone` permission, and has no minutes-long empty window.
 
 **ISO caching.** `ensure_iso` stores each installer ISO in the pool under its stable
 basename (`iso_filename`) via Proxmox's server-side `download-url`, and Packer boots it
@@ -117,18 +120,19 @@ automatically. (Previously Packer re-downloaded and re-uploaded it every run.)
 
 ### Dry-run the Proxmox side first
 
-`ensure_iso` and `promote` make real Proxmox API calls, and they need a token with more
-than build permissions — at least `Datastore.Allocate*` (ISO download) and
-`VM.Clone`/`VM.Allocate` (clone + delete). Before trusting the nightly cron, dry-run once:
+`ensure_iso` and `promote_by_name` make real Proxmox API calls, and they need a token with
+more than build permissions — at least `Datastore.Allocate*` (ISO download) plus
+`VM.Config.Options` (rename) and `VM.Allocate` (delete). No `VM.Clone` is needed. Before
+trusting the nightly cron, dry-run once:
 
 ```sh
 PVE_DRY_RUN=1 ./build.sh resolute
 ```
 
 This prints every mutating API call instead of making it (and skips the packer build), so
-you can confirm the VMIDs and the plan. If your build token lacks the permissions, a real
-run fails at `ensure_iso` or `promote` — and because promote is fail-safe, the production
-template is left intact.
+you can confirm the slot choice and the rename/delete plan against current cluster state.
+If your build token lacks the permissions, a real run fails at `ensure_iso` or the publish
+step — and because publish is fail-safe, the live template is left intact.
 
 ## Credentials
 

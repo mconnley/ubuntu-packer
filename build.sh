@@ -10,13 +10,14 @@
 # Per release, three steps:
 #   1. ensure_iso   pre-stage the ISO in the pool under a stable name, so Packer
 #                   boots it via iso_file and nothing re-downloads 2.7 GB nightly.
-#   2. packer build to a DISPOSABLE build_vm_id (with -force).
-#   3. promote      on success only, publish that build onto the production
-#                   template_vm_id — so a failed build never harms the working
-#                   template. Skipped if the build failed.
+#   2. packer build into the free one of the release's two disposable slots (the
+#                   one NOT holding the live template), with -force.
+#   3. promote_by_name  on success only, rename that build to the canonical
+#                   template name clones select by — so a failed build never
+#                   touches the working template. Skipped if the build failed.
 #
 # PVE_DRY_RUN=1 ./build.sh resolute
-#   Exercises the Proxmox API control flow (ensure_iso + promote) printing every
+#   Exercises the Proxmox API control flow (ensure_iso + publish) printing every
 #   mutating call instead of making it, and SKIPS the packer build. Run this once
 #   before trusting the nightly cron — see the README.
 #
@@ -103,12 +104,22 @@ for release in "${RELEASES[@]}"; do
   iso_checksum=$(hcl_get "$varfile" iso_checksum)
   iso_filename=$(hcl_get "$varfile" iso_filename)
   template_name=$(hcl_get "$varfile" template_name)
-  build_vm_id=$(hcl_get "$varfile" build_vm_id)
-  template_vm_id=$(hcl_get "$varfile" template_vm_id)
+  slot_a=$(hcl_get "$varfile" build_vm_id_a)
+  slot_b=$(hcl_get "$varfile" build_vm_id_b)
   sums_url=${iso_checksum#file:}   # iso_checksum is file:<SHA256SUMS url>
 
+  # Pick the build slot: whichever of the two does NOT currently hold the live
+  # template. If the live template is at neither (first migration, or none), use
+  # slot A. This guarantees the -force build never lands on the live template.
+  current=$(_pve_templates_named "$template_name" 2>/dev/null | head -n1)
+  if [ "$current" = "$slot_a" ]; then
+    build_vm_id="$slot_b"
+  else
+    build_vm_id="$slot_a"
+  fi
+
   echo "=============================================================================="
-  echo "  ${release}  ($(date '+%Y-%m-%d %H:%M:%S'))  build ${build_vm_id} -> template ${template_vm_id}"
+  echo "  ${release}  ($(date '+%Y-%m-%d %H:%M:%S'))  build slot ${build_vm_id} -> ${template_name} (live: ${current:-none})"
   echo "=============================================================================="
 
   # 1. Pre-stage the ISO (idempotent; a hit is a no-op).
@@ -118,29 +129,31 @@ for release in "${RELEASES[@]}"; do
     continue
   fi
 
-  # Dry-run: exercise the promote control flow and stop — no packer, no changes.
+  # Dry-run: show the publish plan against current state and stop — no changes.
   if [ "$PVE_DRY_RUN" = "1" ]; then
-    echo "  [dry-run] skipping packer build; showing promote plan:"
-    promote "$build_vm_id" "$template_vm_id" "$template_name" "$VM_POOL" || true
+    echo "  [dry-run] skipping packer build; showing publish plan:"
+    promote_by_name "$template_name" "$build_vm_id" || true
     echo "--- ${release}: dry-run complete"
     continue
   fi
 
-  # 2. Build into the disposable vmid. -force clears a leftover build vmid.
+  # 2. Build into the chosen disposable slot. -force clears any leftover there
+  #    (a stale -building or -old); it is never the live template's slot.
   if ! packer build \
     -var-file=common.pkrvars.hcl \
     -var-file="$varfile" \
     -var-file="$SENSITIVE" \
+    -var "build_vm_id=${build_vm_id}" \
     ${PACKER_ARGS[@]+"${PACKER_ARGS[@]}"} \
     -force \
     . ; then
-    echo "--- ${release}: FAILED (packer build); production template ${template_vm_id} untouched" >&2
+    echo "--- ${release}: FAILED (packer build); live template ${template_name} untouched" >&2
     failed+=("$release")
     continue
   fi
 
-  # 3. Publish onto production only after a verified-good build.
-  if ! promote "$build_vm_id" "$template_vm_id" "$template_name" "$VM_POOL"; then
+  # 3. Publish by rename, only after a verified-good build.
+  if ! promote_by_name "$template_name" "$build_vm_id"; then
     echo "--- ${release}: FAILED (promote)" >&2
     failed+=("$release")
     continue

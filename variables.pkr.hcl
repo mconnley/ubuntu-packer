@@ -112,25 +112,28 @@ variable "iso_filename" {
 
 variable "template_name" {
   type        = string
-  description = "Name of the PRODUCTION template that clones use, e.g. ubuntu-noble-template. The build VM/template is named <template_name>-build until promoted onto it."
+  description = "Canonical template name clones select by, e.g. ubuntu-noble-template. The build is named <template_name>-building and renamed to this on success."
 }
 
 variable "build_vm_id" {
   type        = number
   description = <<-EOT
-    DISPOSABLE vmid Packer builds into, always with -force. Kept clear of any
-    production vmid so a failed build never harms a working template; on success
-    it is promoted onto template_vm_id and then left in place as a fallback.
+    The DISPOSABLE vmid to build into THIS run — one of the release's two slots
+    (build_vm_id_a / build_vm_id_b), chosen by build.sh as whichever does not
+    currently hold the canonical template, and passed in with -var. Built with
+    -force. Never the slot holding the live template, so a failed build cannot
+    harm it.
   EOT
 }
 
-variable "template_vm_id" {
+variable "build_vm_id_a" {
   type        = number
-  description = <<-EOT
-    PRODUCTION vmid that clones use. Never built into directly — build.sh's
-    promote step publishes a verified build_vm_id onto it after a successful
-    build. This is the number a failed build must never be able to empty.
-  EOT
+  description = "First of two disposable build slots for this release. Read by build.sh (not the template) to pick build_vm_id; the two slots alternate (blue/green) across nightly builds."
+}
+
+variable "build_vm_id_b" {
+  type        = number
+  description = "Second disposable build slot. See build_vm_id_a."
 }
 
 ##################################################################################
