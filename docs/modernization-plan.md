@@ -201,10 +201,10 @@ non-zero.
 
 ### P3 — F13: the schedule itself is in no repo
 
-No `/etc/cron.d` entry and no systemd timer on `ubuntu1` runs this. Under ADR-0005 and
-ADR-0001 seam (a), the *schedule* is host config and belongs in **`ansible-homelab`** —
-a systemd timer + unit, not a hand-rolled crontab. Out of scope for this repo's changes,
-but it should be a tracked follow-up in that repo.
+No `/etc/cron.d` entry and no systemd timer on `ubuntu1` runs this. The *schedule* is host
+config and belongs in **`ansible-homelab`** — a systemd timer + unit, not a hand-rolled
+crontab. Out of scope for this repo's changes, but it should be a tracked follow-up in that
+repo.
 
 ### P3 — F14: no alerting, no CI
 
@@ -226,8 +226,7 @@ on a daily unattended build; the current release is **v1.2.4** (2026-07-21). Tig
 
 - README is a stub claiming **v0.11.0**; `main` has moved well past that tag. Rewrite:
   what it builds, how the daily job runs, the `sensitive.pkrvars.hcl` contract (generated
-  from an `.example` file), the boundary with `ansible-homelab` (ADR-0005), and how to
-  add a release.
+  from an `.example` file), the boundary with `ansible-homelab`, and how to add a release.
 - Add `sensitive.pkrvars.hcl.example` — the README currently documents the contract in
   prose and calls the file `sensitive.variables.pkr.hcl`, which is the wrong filename.
 - **Gitflow is broken:** `develop` is **25 commits behind `main`** and 0 ahead. The

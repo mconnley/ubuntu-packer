@@ -295,7 +295,7 @@ variable "ansible_ssh_key" {
   description = <<-EOT
     Public SSH key authorized for the ansible user — the handoff point to the
     ansible-homelab repo. This must be baked in: it is what lets Ansible reach
-    the host at all. See ADR-0005 in the homelab-gitops repo.
+    the host at all.
   EOT
 }
 

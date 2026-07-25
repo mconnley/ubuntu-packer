@@ -6,16 +6,14 @@ every non-Talos Linux VM is cloned from.
 The build runs **unattended, nightly, on `ubuntu1`**, so a freshly cloned VM is current
 the moment it hits the wire, with the standard site config already in place.
 
-| Release | Template | VMID |
-|---------|----------|------|
-| Ubuntu 24.04 LTS (Noble Numbat) | `ubuntu-noble-template` | 100 |
-| Ubuntu 26.04 LTS (Resolute Raccoon) | `ubuntu-resolute-template` | 500 |
+| Release | Template | Build slots (VMID rotates) |
+|---------|----------|----------------------------|
+| Ubuntu 24.04 LTS (Noble Numbat) | `ubuntu-noble-template` | 9100 / 9101 |
+| Ubuntu 26.04 LTS (Resolute Raccoon) | `ubuntu-resolute-template` | 9500 / 9501 |
 
 ## What is baked into the image
 
-The dividing line, from
-[ADR-0005](https://github.com/mconnley/homelab-gitops/blob/main/docs/adr/0005-vm-golden-images-packer-repo.md)
-in `homelab-gitops`:
+The dividing line between what this repo bakes in and what Ansible configures afterward:
 
 > **Bake it into the image only if it must be true before Ansible can reach the host.**
 > Everything else belongs in `ansible-homelab`.
@@ -245,8 +243,8 @@ was set but referenced by nothing, which silently left the build user in every c
   as-is pending that decision rather than silently changed.
 - **The nightly schedule lives in the crontab, not this repo.** It runs from matt's
   crontab on `ubuntu1` (`cronitor exec <key> ./build.sh <release>`, releases 2h apart so
-  the fixed build IP never collides). Under ADR-0005 the schedule is host config and would
-  ideally move to an `ansible-homelab`-managed systemd timer.
+  the fixed build IP never collides). The schedule is host config and would ideally move to
+  an `ansible-homelab`-managed systemd timer.
 - **Consider key-based auth for the build user**, removing password auth from the
   installer entirely.
 - **Stale branches.** This repo now works trunk-based on `main`. `develop` is 25 commits
