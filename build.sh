@@ -39,6 +39,38 @@ cd "$(dirname "$0")"
 
 SENSITIVE="sensitive.pkrvars.hcl"
 
+# --- Uptime Kuma heartbeat ----------------------------------------------------
+# Runs ALONGSIDE the Cronitor wrapper this script is already invoked under
+# (`cronitor exec <key> ./build.sh <release>` from the nightly crontab on
+# ubuntu1). Cronitor stays authoritative until Kuma has been green for three
+# consecutive days.
+#
+# Deliberately in here rather than in the crontab: the crontab is a personal
+# one that is not version-controlled, whereas this file is reviewed. It also
+# means the ping is per-release, matching how Cronitor is invoked — one monitor
+# per release, so a Noble failure cannot mask a Resolute success.
+#
+# The token map is `<release> <token>` per line, root-readable only, placed by
+# ansible-homelab. No token is in this repo. A missing map simply disables the
+# Kuma half; the build and the Cronitor ping are unaffected.
+KUMA_PUSH_MAP="${KUMA_PUSH_MAP:-/etc/kuma-push.map}"
+KUMA_URL="${KUMA_URL:-https://uptime.mattconnley.com/api/push}"
+
+kuma_ping() {
+  local release="$1" status="$2" msg="${3:-}" token
+  [ -r "$KUMA_PUSH_MAP" ] || return 0
+  token="$(awk -v r="$release" '$1==r {print $2; exit}' "$KUMA_PUSH_MAP" 2>/dev/null)"
+  [ -n "$token" ] || return 0
+  # Never fail the build on a heartbeat. --cacert because uptime.mattconnley.com
+  # presents a ConnleyHome-CA certificate; hosts that do not trust it otherwise
+  # fail with "self-signed certificate in certificate chain" and the ping is
+  # lost silently.
+  curl -fsS -m 10 --retry 2 \
+    ${CONNLEY_CA_FILE:+--cacert "$CONNLEY_CA_FILE"} \
+    "${KUMA_URL}/${token}?status=${status}&msg=$(printf '%s' "${msg:-$status}" | sed 's/ /%20/g')" \
+    >/dev/null 2>&1 || true
+}
+
 # --- Split args at `--`: releases before, pass-through packer args after ------
 RELEASES=()
 PACKER_ARGS=()
@@ -125,6 +157,7 @@ for release in "${RELEASES[@]}"; do
   # 1. Pre-stage the ISO (idempotent; a hit is a no-op).
   if ! ensure_iso "$ISO_POOL" "$iso_filename" "$iso_url" "$sums_url"; then
     echo "--- ${release}: FAILED (ISO staging)" >&2
+    kuma_ping "$release" down "ISO staging failed"
     failed+=("$release")
     continue
   fi
@@ -148,6 +181,7 @@ for release in "${RELEASES[@]}"; do
     -force \
     . ; then
     echo "--- ${release}: FAILED (packer build); live template ${template_name} untouched" >&2
+    kuma_ping "$release" down "packer build failed"
     failed+=("$release")
     continue
   fi
@@ -155,11 +189,13 @@ for release in "${RELEASES[@]}"; do
   # 3. Publish by rename, only after a verified-good build.
   if ! promote_by_name "$template_name" "$build_vm_id"; then
     echo "--- ${release}: FAILED (promote)" >&2
+    kuma_ping "$release" down "promote failed"
     failed+=("$release")
     continue
   fi
 
   echo "--- ${release}: OK"
+  kuma_ping "$release" up "template published"
 done
 
 if [ "${#failed[@]}" -ne 0 ]; then
