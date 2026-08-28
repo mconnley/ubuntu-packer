@@ -56,19 +56,34 @@ SENSITIVE="sensitive.pkrvars.hcl"
 KUMA_PUSH_MAP="${KUMA_PUSH_MAP:-/etc/kuma-push.map}"
 KUMA_URL="${KUMA_URL:-https://uptime.mattconnley.com/api/push}"
 
+# Every skip path below WARNS. It used to `return 0` in silence, and that is how
+# both Packer monitors sat DOWN in Kuma for two days while Cronitor read passing:
+# the map was 0600 root:root and this script runs from matt's crontab, so
+# `[ -r ... ]` was false and nothing said so. A heartbeat that opts out quietly
+# is indistinguishable from one that was never wired. stderr is captured by the
+# `cronitor exec` wrapper this script runs under, so a warning is visible.
 kuma_ping() {
   local release="$1" status="$2" msg="${3:-}" token
-  [ -r "$KUMA_PUSH_MAP" ] || return 0
+  if [ ! -r "$KUMA_PUSH_MAP" ]; then
+    echo "warning: kuma: ${KUMA_PUSH_MAP} not readable as $(id -un); no heartbeat for ${release}" >&2
+    return 0
+  fi
   token="$(awk -v r="$release" '$1==r {print $2; exit}' "$KUMA_PUSH_MAP" 2>/dev/null)"
-  [ -n "$token" ] || return 0
+  if [ -z "$token" ]; then
+    echo "warning: kuma: no token for release '${release}' in ${KUMA_PUSH_MAP}; no heartbeat" >&2
+    return 0
+  fi
   # Never fail the build on a heartbeat. --cacert because uptime.mattconnley.com
   # presents a ConnleyHome-CA certificate; hosts that do not trust it otherwise
   # fail with "self-signed certificate in certificate chain" and the ping is
   # lost silently.
-  curl -fsS -m 10 --retry 2 \
-    ${CONNLEY_CA_FILE:+--cacert "$CONNLEY_CA_FILE"} \
-    "${KUMA_URL}/${token}?status=${status}&msg=$(printf '%s' "${msg:-$status}" | sed 's/ /%20/g')" \
-    >/dev/null 2>&1 || true
+  if ! curl -fsS -m 10 --retry 2 \
+      ${CONNLEY_CA_FILE:+--cacert "$CONNLEY_CA_FILE"} \
+      "${KUMA_URL}/${token}?status=${status}&msg=$(printf '%s' "${msg:-$status}" | sed 's/ /%20/g')" \
+      >/dev/null 2>&1; then
+    echo "warning: kuma: push for ${release} (${status}) failed; heartbeat lost" >&2
+  fi
+  return 0
 }
 
 # --- Split args at `--`: releases before, pass-through packer args after ------

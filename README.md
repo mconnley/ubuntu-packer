@@ -245,6 +245,13 @@ was set but referenced by nothing, which silently left the build user in every c
   crontab on `ubuntu1` (`cronitor exec <key> ./build.sh <release>`, releases 2h apart so
   the fixed build IP never collides). The schedule is host config and would ideally move to
   an `ansible-homelab`-managed systemd timer.
+- **Nothing reconciles the checkout at `/home/matt/code/ubuntu-packer` on `ubuntu1`.**
+  Merging here does not deploy; the nightly cron runs whatever that working copy
+  happens to contain. It ran two days of builds against a Jul 23 copy after
+  `800fb77` added the Uptime Kuma heartbeat, so both Packer monitors read DOWN in
+  Kuma while Cronitor read passing. Until the timer move above lands, **`git pull`
+  on ubuntu1 is part of shipping a `build.sh` change** — verify with
+  `git -C /home/matt/code/ubuntu-packer log --oneline -1` against this repo's HEAD.
 - **Consider key-based auth for the build user**, removing password auth from the
   installer entirely.
 - **Stale branches.** This repo now works trunk-based on `main`. `develop` is 25 commits
