@@ -30,14 +30,3 @@ proxmox_token    = "00000000-0000-0000-0000-000000000000"
 proxmox_node     = "pvehost1"
 iso_storage_pool = "your-iso-pool"
 vm_storage_pool  = "your-vm-pool"
-
-##################################################################################
-# Checkmk
-#
-# An automation user's secret, from Checkmk's "Users" page.
-##################################################################################
-
-check_mk_fqdn     = "checkmk.example.com"
-check_mk_site     = "your-site"
-check_mk_username = "automation"
-check_mk_password = "REPLACE"

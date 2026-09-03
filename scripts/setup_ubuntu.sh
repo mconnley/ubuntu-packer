@@ -21,8 +21,8 @@
 # -u           an unset variable (e.g. a provisioner env var never wired up) aborts
 # -o pipefail  a failure inside a pipeline is not masked by a later success
 #
-# Without these, a 404 on the Checkmk agent or a failed dpkg would still publish
-# a template. For a build nobody watches, that is the difference between a loud
+# Without these, a failed dpkg or a broken apt mirror would still publish a
+# template. For a build nobody watches, that is the difference between a loud
 # failure and months of quietly degraded images.
 set -euo pipefail
 
@@ -47,16 +47,6 @@ mkdir -p /etc/systemd/timesyncd.conf.d
 mv /tmp/homelabntp.conf /etc/systemd/timesyncd.conf.d/homelabntp.conf
 mv /tmp/multipath.conf /etc/multipath.conf
 
-log "Staging the first-boot registration job ..."
-# Credentials are substituted here rather than in the Packer template so they
-# arrive via environment variables and stay out of any tracked file.
-sed -i "s|REPLACE_FQDN|${CHECK_MK_FQDN}|; \
-        s|REPLACE_SITE|${CHECK_MK_SITE}|; \
-        s|REPLACE_USERNAME|${CHECK_MK_USERNAME}|; \
-        s|REPLACE_PASSWORD|${CHECK_MK_PASSWORD}|" /tmp/postbuild_job.sh
-mv /tmp/postbuild_job.sh /usr/local/bin/postbuild_job.sh
-chmod 700 /usr/local/bin/postbuild_job.sh
-
 log "Applying all available updates ..."
 # The installer already pulled -security and -updates (autoinstall `updates: all`).
 # This catches anything published between the ISO snapshot and this build, which
@@ -64,15 +54,6 @@ log "Applying all available updates ..."
 export DEBIAN_FRONTEND=noninteractive
 apt-get -y update
 apt-get -y dist-upgrade
-
-log "Installing the Checkmk agent (${CHECK_MK_AGENT_VERSION}) ..."
-CMK_DEB="/root/check-mk-agent_${CHECK_MK_AGENT_VERSION}_all.deb"
-CMK_URL="https://${CHECK_MK_FQDN}/${CHECK_MK_SITE}/check_mk/agents/check-mk-agent_${CHECK_MK_AGENT_VERSION}_all.deb"
-# wget exits non-zero on an HTTP error by default, so a retired agent version
-# fails the build instead of installing an HTML error page.
-wget --quiet --tries=3 "${CMK_URL}" -O "${CMK_DEB}"
-dpkg -i "${CMK_DEB}"
-rm -f "${CMK_DEB}"
 
 log "Removing the unused staff group ..."
 # staff carries write access to /usr/local; nothing here uses it. Guarded so a
@@ -193,8 +174,6 @@ check "root CA staged"            '[ -f /usr/local/share/ca-certificates/homelab
 check "root CA trusted"           'ls /etc/ssl/certs/homelabroot.pem >/dev/null 2>&1'
 check "NTP config in place"       '[ -f /etc/systemd/timesyncd.conf.d/homelabntp.conf ]'
 check "multipath config in place" '[ -f /etc/multipath.conf ]'
-check "checkmk agent installed"   'dpkg -s check-mk-agent >/dev/null 2>&1'
-check "first-boot job staged"     '[ -x /usr/local/bin/postbuild_job.sh ]'
 check "ansible user exists"       'id ansible >/dev/null 2>&1'
 check "password auth disabled"    'grep -q "^PasswordAuthentication no" /etc/ssh/sshd_config'
 check "root login disabled"       'grep -q "^PermitRootLogin no" /etc/ssh/sshd_config'

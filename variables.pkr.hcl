@@ -345,47 +345,6 @@ variable "timezone" {
 }
 
 ##################################################################################
-# Checkmk
-#
-# The agent package is installed into the image. Registration with the Checkmk
-# server is a separate, host-specific concern — see files/postbuild_job.sh and
-# the open question in README.md.
-##################################################################################
-
-variable "check_mk_fqdn" {
-  type        = string
-  description = "Checkmk server FQDN."
-  sensitive   = true
-}
-
-variable "check_mk_site" {
-  type        = string
-  description = "Checkmk site name."
-  sensitive   = true
-}
-
-variable "check_mk_username" {
-  type        = string
-  description = "Checkmk automation user."
-  sensitive   = true
-}
-
-variable "check_mk_password" {
-  type        = string
-  description = "Checkmk automation secret."
-  sensitive   = true
-}
-
-variable "check_mk_agent_version" {
-  type        = string
-  description = <<-EOT
-    Agent package version, pinned deliberately rather than tracking the server.
-    Bump this in the same change that upgrades the Checkmk server, so the image
-    and the server never drift silently.
-  EOT
-}
-
-##################################################################################
 # Provisioning
 ##################################################################################
 

@@ -233,14 +233,13 @@ was set but referenced by nothing, which silently left the build user in every c
 
 ## Open items
 
-- **Checkmk registration.** The agent package is installed into the image, but
-  `files/postbuild_job.sh` — which registers the host with the Checkmk server on first
-  boot — is staged at `/usr/local/bin/` and **nothing invokes it** on Proxmox. Its only
-  callers were a VMware customization spec and a Rancher cloud-config, both since removed.
-  It also bakes Checkmk API credentials into every image. Registration is host-specific,
-  post-boot work that belongs in `ansible-homelab` (which already has a `checkmk_agent`
-  role, currently used only for `dns_servers` and `flow_probes`). Left functionally
-  as-is pending that decision rather than silently changed.
+- **`sensitive.pkrvars.hcl` on `ubuntu1` still has `check_mk_*` keys.** Checkmk agent
+  install and first-boot registration were removed from the build (Checkmk itself is
+  being retired — see `homelab-gitops` Phase 9 of `observability-migration.md`), but that
+  file is gitignored and lives only on `ubuntu1`; `git pull` there does not touch it. The
+  four `check_mk_*` lines are now unrecognized by `variables.pkr.hcl` and must be deleted
+  from `/home/matt/code/ubuntu-packer/sensitive.pkrvars.hcl` by hand before the next
+  nightly run, or `packer validate` fails on an undeclared variable.
 - **The nightly schedule lives in the crontab, not this repo.** It runs from matt's
   crontab on `ubuntu1` (`cronitor exec <key> ./build.sh <release>`, releases 2h apart so
   the fixed build IP never collides). The schedule is host config and would ideally move to
