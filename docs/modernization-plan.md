@@ -351,6 +351,15 @@ Only `matt` now needs a stored hash.
   in the pool under its stable basename via Proxmox server-side `download-url`; Packer
   boots it with `iso_file`. Fetched once, reused nightly; a point-release bump changes
   `iso_filename` and re-pulls automatically.
+- **Checkmk agent install and registration removed (2026-09-03).** The nightly build
+  depended on `checkmk.mattconnley.com` being reachable to `wget` the agent package
+  (`scripts/setup_ubuntu.sh`); when that VM was powered off as step 2 of
+  `homelab-gitops`'s Phase 9 Checkmk retirement (`docs/observability-migration.md`), both
+  Packer monitors failed identically at that step under `set -e`. Since Checkmk is being
+  deleted outright, the agent install/verify steps and the dead `files/postbuild_job.sh`
+  first-boot registration job (see F16/"Not done" above — it was already unreachable on
+  Proxmox) were removed rather than patched around. Resolves F12's Checkmk-404 case and
+  the "Checkmk registration" open item by elimination.
 - **A failed build can no longer destroy the working template** — clones select the
   template by **name**, so publishing is a blue/green **rename**, not a clone. Packer
   builds into whichever of the release's two disposable slots (`build_vm_id_a/_b`) does not
@@ -363,17 +372,11 @@ Only `matt` now needs a stored hash.
 
 ## Not done
 
-- **Credential rotation.** The `matt` hash and the Checkmk automation secret should be
-  rotated, since the old `matt` hash is in this public repo's history. That is an
-  operator action.
-- **Credential rotation.** The `matt` hash and the Checkmk automation secret should be
-  rotated, since the old `matt` hash is in this public repo's history. That is an
-  operator action.
-- **Checkmk registration** (`files/postbuild_job.sh`) — left functionally untouched. It is
-  staged into the image but nothing on Proxmox invokes it, and it bakes API credentials
-  into every clone. The correct home is `ansible-homelab`'s existing `checkmk_agent` role,
-  currently applied only to `dns_servers` and `flow_probes`. Changing it silently would
-  have meant either starting or stopping host registration without a decision.
+- **Credential rotation.** The `matt` hash is in this public repo's history and should be
+  rotated. That is an operator action. (The Checkmk automation secret is moot now that
+  Checkmk itself is being deleted — see "Follow-ups since" above.)
+- **Checkmk registration** (`files/postbuild_job.sh`) — resolved by deletion; see
+  "Follow-ups since" above.
 - **Key-based auth for the build user**, which would remove password auth from the
   installer altogether.
 - **Branch cleanup** — the repo moved to trunk-based on `main` (2026-07-22). `develop`

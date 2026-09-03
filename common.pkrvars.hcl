@@ -94,14 +94,6 @@ matt_ssh_key    = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDI6FIMmDIzZJiZkf5QKrOcf
 ansible_ssh_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINKrPIcpcC5y+TECqMeDzdW+45PO/Ddw+/TQzheQD+bN ansible-homelab"
 
 ##################################################################################
-# Checkmk
-#
-# Pinned deliberately. Bump in the same change that upgrades the Checkmk server.
-##################################################################################
-
-check_mk_agent_version = "2.4.0p17-1"
-
-##################################################################################
 # Provisioning
 ##################################################################################
 

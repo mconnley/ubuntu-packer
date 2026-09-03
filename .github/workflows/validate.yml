@@ -60,10 +60,6 @@ jobs:
             -var 'proxmox_node=ci' \
             -var 'iso_storage_pool=ci' \
             -var 'vm_storage_pool=ci' \
-            -var 'check_mk_fqdn=ci.invalid' \
-            -var 'check_mk_site=ci' \
-            -var 'check_mk_username=ci' \
-            -var 'check_mk_password=ci' \
             .
 
   shellcheck:
@@ -74,4 +70,4 @@ jobs:
         # -S error to start with, so CI reports genuine breakage rather than
         # style opinions. Tighten to warning once the existing output is clean.
         # -x so shellcheck follows the `. scripts/pve-api.sh` source in build.sh.
-        run: shellcheck -x -S error build.sh scripts/pve-api.sh scripts/setup_ubuntu.sh files/postbuild_job.sh
+        run: shellcheck -x -S error build.sh scripts/pve-api.sh scripts/setup_ubuntu.sh

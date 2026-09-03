@@ -150,7 +150,6 @@ build {
       "${path.root}/files/secure/homelabrootcert.crt",
       "${path.root}/files/homelabntp.conf",
       "${path.root}/files/multipath.conf",
-      "${path.root}/files/postbuild_job.sh",
     ]
     destination = "/tmp/"
   }
@@ -167,11 +166,6 @@ build {
     environment_vars = [
       "BUILD_USER=${var.ssh_username}",
       "TIMEZONE=${var.timezone}",
-      "CHECK_MK_FQDN=${var.check_mk_fqdn}",
-      "CHECK_MK_SITE=${var.check_mk_site}",
-      "CHECK_MK_USERNAME=${var.check_mk_username}",
-      "CHECK_MK_PASSWORD=${var.check_mk_password}",
-      "CHECK_MK_AGENT_VERSION=${var.check_mk_agent_version}",
     ]
     scripts           = var.shell_scripts
     expect_disconnect = true
