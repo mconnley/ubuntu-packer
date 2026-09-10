@@ -149,7 +149,6 @@ build {
     sources = [
       "${path.root}/files/secure/homelabrootcert.crt",
       "${path.root}/files/homelabntp.conf",
-      "${path.root}/files/multipath.conf",
     ]
     destination = "/tmp/"
   }
