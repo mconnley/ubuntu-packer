@@ -3,7 +3,7 @@
 # Provisioning + generalization for the Ubuntu template.
 #
 # Runs once, as root, as the final build step. Four phases:
-#   1. CONFIGURE   — put site config in place (CA trust, NTP, multipath, agent).
+#   1. CONFIGURE   — put site config in place (CA trust, NTP, agent).
 #   2. HARDEN      — undo the access the build itself needed.
 #   3. GENERALIZE  — strip every host-specific identity so clones diverge cleanly.
 #   4. VERIFY      — assert the above actually happened.
@@ -42,10 +42,18 @@ mv /tmp/homelabrootcert.crt /usr/local/share/ca-certificates/homelabroot.crt
 chmod 644 /usr/local/share/ca-certificates/homelabroot.crt
 update-ca-certificates
 
-log "Installing NTP and multipath configuration ..."
+log "Installing NTP configuration ..."
+# multipath.conf was staged here until 2026-09-10. It is gone deliberately:
+# every VM built from this template presents a single disk, /dev/mapper carries
+# nothing but `control`, iscsid is inactive with zero sessions, and the config
+# itself blacklisted `^sd[a-z0-9]+` — precisely the disks these guests have. It
+# configured multipathd to ignore everything while leaving it running. Multipath
+# earns its place with iSCSI multipathing, FC/SAS SAN or NVMe-oF across more
+# than one path; none of that reaches a guest here, and Ceph RBD is consumed by
+# the hypervisor. `linux_baseline` in ansible-homelab masks multipathd on the
+# hosts that already have it (ADR-0023, baseline item P3).
 mkdir -p /etc/systemd/timesyncd.conf.d
 mv /tmp/homelabntp.conf /etc/systemd/timesyncd.conf.d/homelabntp.conf
-mv /tmp/multipath.conf /etc/multipath.conf
 
 log "Applying all available updates ..."
 # The installer already pulled -security and -updates (autoinstall `updates: all`).
@@ -173,7 +181,6 @@ check "build user sudoers gone"   '[ ! -f "/etc/sudoers.d/${BUILD_USER}" ]'
 check "root CA staged"            '[ -f /usr/local/share/ca-certificates/homelabroot.crt ]'
 check "root CA trusted"           'ls /etc/ssl/certs/homelabroot.pem >/dev/null 2>&1'
 check "NTP config in place"       '[ -f /etc/systemd/timesyncd.conf.d/homelabntp.conf ]'
-check "multipath config in place" '[ -f /etc/multipath.conf ]'
 check "ansible user exists"       'id ansible >/dev/null 2>&1'
 check "password auth disabled"    'grep -q "^PasswordAuthentication no" /etc/ssh/sshd_config'
 check "root login disabled"       'grep -q "^PermitRootLogin no" /etc/ssh/sshd_config'
